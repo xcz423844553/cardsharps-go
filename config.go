@@ -7,7 +7,7 @@ const (
 	MYSQL_USERNAME = "root"
 	MYSQL_PASSWORD = ""
 	MYSQL_IP       = "127.0.0.1"
-	MYSQL_PORT     = "3307"
+	MYSQL_PORT     = "3306"
 	MYSQL_DBADDR   = MYSQL_USERNAME + ":" + MYSQL_PASSWORD + "@tcp(" + MYSQL_IP + ":" + MYSQL_PORT + ")/"
 
 	DB_NAME                = "card_sharps"

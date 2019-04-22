@@ -1,6 +1,8 @@
 package main
 
-import "errors"
+import (
+	"errors"
+)
 
 type YahooResponse struct {
 	OptionChain struct {
@@ -89,7 +91,7 @@ func (resp YahooResponse) GetQuote() (YahooQuote, error) {
 	return quote, nil
 }
 
-func (resp YahooResponse) GetOption() ([]YahooOption, error) {
+func (resp YahooResponse) GetOptions() ([]YahooOption, error) {
 	var options []YahooOption
 	if resp.isEmptyResult() {
 		return options, errors.New("Option response is empty")
@@ -100,25 +102,35 @@ func (resp YahooResponse) GetOption() ([]YahooOption, error) {
 	return options, nil
 }
 
-func (resp YahooResponse) GetOptionByDefaultFilter() ([]YahooOption, error) {
-	f := NewOptionFilter(maxOptionPercent float32, minOptionPercent float32,
-		maxOpenInterest int64, minOpenInterest int64, maxVolume int64, minVolume int64,
-		maxExpirationDate int64, minExpirationDate int64)
-	var options []YahooOption
+func (resp YahooResponse) GetExpirationDates() ([]int64, error) {
+	//only reads the closest exp date
+	expDates := make([]int64, 1)
 	if resp.isEmptyResult() {
-		return options, errors.New("Option response is empty")
+		return expDates, errors.New("Expiration date response is empty")
 	}
-	callArray := resp.OptionChain.Results[0].OptionsArray[0].Calls
-	putArray := resp.OptionChain.Results[0].OptionsArray[0].Puts
-	for _, c := range callArray {
-		
-	}
-	for _, p := range putArray {
-
-	}
-	options = append(callArray, putArray...)
-	return options, nil
+	expDates[0] = resp.OptionChain.Results[0].ExpirationDates[0]
+	return expDates, nil
 }
+
+// func (resp YahooResponse) GetOptionByDefaultFilter() ([]YahooOption, error) {
+// 	f := NewOptionFilter(maxOptionPercent float32, minOptionPercent float32,
+// 		maxOpenInterest int64, minOpenInterest int64, maxVolume int64, minVolume int64,
+// 		maxExpirationDate int64, minExpirationDate int64)
+// 	var options []YahooOption
+// 	if resp.isEmptyResult() {
+// 		return options, errors.New("Option response is empty")
+// 	}
+// 	callArray := resp.OptionChain.Results[0].OptionsArray[0].Calls
+// 	putArray := resp.OptionChain.Results[0].OptionsArray[0].Puts
+// 	for _, c := range callArray {
+
+// 	}
+// 	for _, p := range putArray {
+
+// 	}
+// 	options = append(callArray, putArray...)
+// 	return options, nil
+// }
 
 func (option YahooOption) GetSymbol() string {
 	str := option.ContractSymbol
@@ -129,5 +141,3 @@ func (option YahooOption) GetOptionType() string {
 	str := option.ContractSymbol
 	return str[(len(str) - 9):(len(str) - 8)]
 }
-
-

@@ -1,15 +1,7 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
-
-	//"encoding/json"
-	"log"
 	"math"
-	"net/http"
-	"strconv"
 )
 
 type OptionFilter struct {
@@ -23,41 +15,7 @@ type OptionFilter struct {
 	MinExpirationDate int64   `json:"minExpirationDate"`
 }
 
-func GetOptionsAndStockDataBySymbol(symbol string) ([]YahooOption, YahooQuote, error) {
-	return GetOptionsAndStockDataBySymbolAndExpDate(symbol, -1)
-}
-
-func GetOptionsAndStockDataBySymbolAndExpDate(symbol string, expDate int64) ([]YahooOption, YahooQuote, error) {
-	url := URL_OPTION + symbol
-	if expDate > 0 {
-		url += "?dates=" + strconv.FormatInt(expDate, 10)
-	}
-	fmt.Println(url)
-	resp, connError := http.Get(url)
-	if connError != nil {
-		log.Fatal(connError)
-	}
-	defer resp.Body.Close()
-	body, parseError := ioutil.ReadAll(resp.Body)
-	if parseError != nil {
-		log.Fatal(parseError)
-	}
-	var y YahooResponse
-	if jsonError := json.Unmarshal(body, &y); jsonError != nil {
-		log.Fatal(jsonError)
-	}
-	option, optionErr := y.GetOption()
-	stock, stockErr := y.GetQuote()
-	if optionErr != nil {
-		return option, stock, optionErr
-	}
-	if stockErr != nil {
-		return option, stock, stockErr
-	}
-	return option, stock, nil
-}
-
-func IsInOptionFilter
+//func IsInOptionFilter
 
 func NewOptionFilter(maxOptionPercent float32, minOptionPercent float32,
 	maxOpenInterest int64, minOpenInterest int64, maxVolume int64, minVolume int64,
@@ -103,5 +61,5 @@ func NewOptionFilter(maxOptionPercent float32, minOptionPercent float32,
 	} else {
 		f.MinExpirationDate = minExpirationDate
 	}
-	return f
+	return *f
 }
