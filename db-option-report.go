@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -63,7 +62,8 @@ func (tbl TblOptionReport) GenerateReport(symbol string, expDate int64) error {
 		var volume int
 		var openInterest int
 		if scanErr = optionRows.Scan(&optionType, &strike, &volume, &openInterest); scanErr != nil {
-			log.Fatal(scanErr)
+			fmt.Println(scanErr)
+			return scanErr
 		}
 		sumPriceBuy += float32(volume) * strike
 		sumPriceSell += float32(openInterest) * strike

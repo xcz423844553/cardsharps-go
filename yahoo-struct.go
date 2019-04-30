@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 )
 
 type YahooResponse struct {
@@ -104,12 +105,20 @@ func (resp YahooResponse) GetOptions() ([]YahooOption, error) {
 
 func (resp YahooResponse) GetExpirationDates() ([]int64, error) {
 	//only reads the closest exp date
-	expDates := make([]int64, 1)
+	expDates := make([]int64, 4)
 	if resp.isEmptyResult() {
 		return expDates, errors.New("Expiration date response is empty")
 	}
 	expDates[0] = resp.OptionChain.Results[0].ExpirationDates[0]
+	expDates[1] = resp.OptionChain.Results[0].ExpirationDates[1]
+	expDates[2] = resp.OptionChain.Results[0].ExpirationDates[2]
+	expDates[3] = resp.OptionChain.Results[0].ExpirationDates[3]
 	return expDates, nil
+}
+
+func (quote YahooQuote) isMarketOpen() bool {
+	fmt.Println(quote.MarketState)
+	return quote.MarketState == "OPEN"
 }
 
 // func (resp YahooResponse) GetOptionByDefaultFilter() ([]YahooOption, error) {

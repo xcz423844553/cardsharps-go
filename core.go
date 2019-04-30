@@ -2,39 +2,49 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"time"
 )
 
 func runCore() {
 	fmt.Println("runCore() starts")
 	initDb()
-	// return
+	isMarketOpen()
+	return
 	//1. get a list of stock to monitor
 	// symbols := []string{"AAPL", "BA"}
 	// symbols := []string{"BA"}
 	// symbols := []string{"UNH", "TRV", "MCD", "AXP", "MSFT", "CAT", "UTX", "IBM", "BA", "MMM", "DIS", "NKE", "VZ", "KO", "AAPL", "PG", "CSCO", "WMT", "INTC", "V", "CVX", "XOM", "HD", "JNJ", "JPM", "WBA", "DOW", "GS", "MRK", "PFE", "DIA", "SPY", "QQQ"}
-	symbols1 := []string{"UNH", "TRV", "MCD", "AXP", "MSFT"}
-	symbols2 := []string{"CAT", "UTX", "IBM", "BA", "MMM"}
-	symbols3 := []string{"DIS", "NKE", "VZ", "KO", "AAPL"}
-	symbols4 := []string{"PG", "CSCO", "WMT", "INTC", "V"}
-	symbols5 := []string{"CVX", "XOM", "HD", "JNJ", "JPM"}
-	symbols6 := []string{"WBA", "DOW", "GS", "MRK", "PFE"}
+
+	// symbols1 := []string{"UNH", "TRV", "MCD", "AXP", "MSFT"}
+	// symbols2 := []string{"CAT", "UTX", "IBM", "BA", "MMM"}
+	// symbols3 := []string{"DIS", "NKE", "VZ", "KO", "AAPL"}
+	// symbols4 := []string{"PG", "CSCO", "WMT", "INTC", "V"}
+	// symbols5 := []string{"CVX", "XOM", "HD", "JNJ", "JPM"}
+	// symbols6 := []string{"WBA", "DOW", "GS", "MRK", "PFE"}
 	symbols0 := []string{"DIA", "SPY", "QQQ"}
 	//2. activate option and stock data getter
+
 	for range time.Tick(time.Minute * 3) {
-		go runOptionAndStockData(symbols1)
-		go runOptionAndStockData(symbols2)
-		go runOptionAndStockData(symbols3)
-		go runOptionAndStockData(symbols4)
-		go runOptionAndStockData(symbols5)
-		go runOptionAndStockData(symbols6)
+		// go runOptionAndStockData(symbols1)
+		// go runOptionAndStockData(symbols2)
+		// go runOptionAndStockData(symbols3)
+		// go runOptionAndStockData(symbols4)
+		// go runOptionAndStockData(symbols5)
+		// go runOptionAndStockData(symbols6)
 		go runOptionAndStockData(symbols0)
 	}
 	/*3. terminate if option data getter
 	and stock data getter are both terminated
 	*/
 	fmt.Println("runCore() ends")
+}
+
+func isMarketOpen() bool {
+	_, quote, _, err := new(YahooApiManager).GetOptionsAndStockDataBySymbol("SPY")
+	if err != nil {
+		return false
+	}
+	return quote.isMarketOpen()
 }
 
 func runOptionAndStockData(symbols []string) {
@@ -68,7 +78,8 @@ func runOptionReport(symbols []string) {
 	for index, symbol := range symbols {
 		_, _, exp, err := new(YahooApiManager).GetOptionsAndStockDataBySymbol(symbol)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
+			continue
 		}
 		expDates[index] = exp[0]
 	}
