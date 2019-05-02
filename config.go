@@ -5,7 +5,7 @@ package main
 const (
 	MYSQL_DBNAME   = "mysql"
 	MYSQL_USERNAME = "root"
-	MYSQL_PASSWORD = ""
+	MYSQL_PASSWORD = "root"
 	MYSQL_IP       = "127.0.0.1"
 	MYSQL_PORT     = "3306"
 	MYSQL_DBADDR   = MYSQL_USERNAME + ":" + MYSQL_PASSWORD + "@tcp(" + MYSQL_IP + ":" + MYSQL_PORT + ")/"

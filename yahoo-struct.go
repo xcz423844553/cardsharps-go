@@ -118,7 +118,7 @@ func (resp YahooResponse) GetExpirationDates() ([]int64, error) {
 
 func (quote YahooQuote) isMarketOpen() bool {
 	fmt.Println(quote.MarketState)
-	return quote.MarketState == "OPEN"
+	return quote.MarketState == "REGULAR"
 }
 
 // func (resp YahooResponse) GetOptionByDefaultFilter() ([]YahooOption, error) {

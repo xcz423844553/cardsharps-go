@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -43,6 +44,7 @@ func (tbl TblOptionData) CreateTableIfNotExist() error {
 		"PriceChange FLOAT(10,2)," +
 		"PercentChange FLOAT(10,2)," +
 		"Volume INT," +
+		"PrevVolume INT," +
 		"OpenInterest INT," +
 		"Bid FLOAT(10,2)," +
 		"Ask FLOAT(10,2)," +
@@ -111,15 +113,15 @@ func (tbl TblOptionData) InsertOptionData(option YahooOption) error {
 		"PriceChange, " +
 		"PercentChange, " +
 		"Volume, " +
+		"PrevVolume, " +
 		"OpenInterest, " +
 		"Bid, " +
 		"Ask, " +
 		"Expiration, " +
 		"ImpliedVolatility, " +
 		"InTheMoney, " +
-		"UpdatedTime) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+		"UpdatedTime) VALUES (?,?,?,?,?,?,?,?,?,0,?,?,?,?,?,?,?)")
 	if dbPrepErr != nil {
-		panic(dbPrepErr)
 		return dbPrepErr
 	}
 	defer stmt.Close()
@@ -153,6 +155,10 @@ func (tbl TblOptionData) UpdateOptionData(option YahooOption) error {
 		return dbConnErr
 	}
 	defer db.Close()
+	prevVolume, selectErr := tbl.SelectOptionDataVolumeByContractSymbolAndDate(option.ContractSymbol, GetTimeInYYYYMMDD())
+	if selectErr != nil {
+		return selectErr
+	}
 	stmt, dbPrepErr := db.Prepare("UPDATE " +
 		TBL_OPTION_DATA_NAME +
 		" SET " +
@@ -160,6 +166,7 @@ func (tbl TblOptionData) UpdateOptionData(option YahooOption) error {
 		"PriceChange=?, " +
 		"PercentChange=?, " +
 		"Volume=?, " +
+		"PrevVolume=?, " +
 		"OpenInterest=?, " +
 		"Bid=?, " +
 		"Ask=?, " +
@@ -176,6 +183,7 @@ func (tbl TblOptionData) UpdateOptionData(option YahooOption) error {
 		option.PriceChange,
 		option.PercentChange,
 		option.Volume,
+		prevVolume,
 		option.OpenInterest,
 		option.Bid,
 		option.Ask,
@@ -188,4 +196,30 @@ func (tbl TblOptionData) UpdateOptionData(option YahooOption) error {
 		return dbExecErr
 	}
 	return nil
+}
+
+func (tbl TblOptionData) SelectOptionDataVolumeByContractSymbolAndDate(contractSymbol string, date int) (int, error) {
+	var volume int
+	db, dbConnErr := sql.Open(MYSQL_DBNAME, MYSQL_DBADDR+DB_NAME)
+	if dbConnErr != nil {
+		return volume, dbConnErr
+	}
+	defer db.Close()
+	stmt, dbPrepErr := db.Prepare("SELECT Volume FROM " + TBL_OPTION_DATA_NAME + " WHERE " + "ContractSymbol=? AND Date=?")
+	if dbPrepErr != nil {
+		return volume, dbPrepErr
+	}
+	defer stmt.Close()
+	optionRows, dbQueryErr := stmt.Query(contractSymbol, date)
+	if dbQueryErr != nil {
+		return volume, dbQueryErr
+	}
+	defer optionRows.Close()
+	for optionRows.Next() {
+		if scanErr := optionRows.Scan(&volume); scanErr != nil {
+			fmt.Println(scanErr)
+			return volume, scanErr
+		}
+	}
+	return volume, nil
 }

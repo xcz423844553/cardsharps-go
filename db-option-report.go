@@ -14,8 +14,8 @@ type TblOptionReport struct {
 func (tbl TblOptionReport) GenerateReport(symbol string, expDate int64) error {
 	var sumPriceBuy float32
 	var sumPriceSell float32
-	var expectedPriceBuy float32
-	var expectedPriceSell float32
+	var expectedPriceVol float32
+	var expectedPriceOI float32
 	var oiCall int
 	var oiPut int
 	var oiTotal int
@@ -23,6 +23,15 @@ func (tbl TblOptionReport) GenerateReport(symbol string, expDate int64) error {
 	var volPut int
 	var volTotal int
 	var stockPrice float32
+	var deltaVolCall int
+	var deltaVolPut int
+	var deltaVolTol int
+	var deltaSumPriceVolCall float32
+	var deltaSumPriceVolPut float32
+	var deltaSumPriceVolTol float32
+	var deltaExpectedPriceVolCall float32
+	var deltaExpectedPriceVolPut float32
+	var deltaExpectedPriceVolTol float32
 	//Connect to database
 	db, dbConnErr := sql.Open(MYSQL_DBNAME, MYSQL_DBADDR+DB_NAME)
 	if dbConnErr != nil {
@@ -36,14 +45,13 @@ func (tbl TblOptionReport) GenerateReport(symbol string, expDate int64) error {
 	var stmt *sql.Stmt
 	var optionRows *sql.Rows
 	var stockRow *sql.Row
-	stmt, dbPrepErr = db.Prepare("SELECT OptionType, Strike, Volume, OpenInterest FROM " +
+	stmt, dbPrepErr = db.Prepare("SELECT OptionType, Strike, Volume, PrevVolume, OpenInterest FROM " +
 		TBL_OPTION_DATA_NAME +
 		" WHERE " +
 		"Symbol = ? AND " +
 		"Date = ? AND " +
 		"Expiration = ?;")
 	if dbPrepErr != nil {
-		panic(dbPrepErr)
 		return dbPrepErr
 	}
 	defer stmt.Close()
@@ -53,15 +61,15 @@ func (tbl TblOptionReport) GenerateReport(symbol string, expDate int64) error {
 		expDate)
 	defer optionRows.Close()
 	if dbQueryErr != nil {
-		panic(dbQueryErr)
 		return dbQueryErr
 	}
 	for optionRows.Next() {
 		var optionType string
 		var strike float32
 		var volume int
+		var prevVolume int
 		var openInterest int
-		if scanErr = optionRows.Scan(&optionType, &strike, &volume, &openInterest); scanErr != nil {
+		if scanErr = optionRows.Scan(&optionType, &strike, &volume, &prevVolume, &openInterest); scanErr != nil {
 			fmt.Println(scanErr)
 			return scanErr
 		}
@@ -70,31 +78,51 @@ func (tbl TblOptionReport) GenerateReport(symbol string, expDate int64) error {
 		if optionType == "C" {
 			oiCall += openInterest
 			volCall += volume
+			deltaVolCall += volume - prevVolume
+			deltaSumPriceVolCall += float32(volume-prevVolume) * strike
 		} else if optionType == "P" {
 			oiPut += openInterest
 			volPut += volume
+			deltaVolPut += volume - prevVolume
+			deltaSumPriceVolPut += float32(volume-prevVolume) * strike
 		}
 		oiTotal += openInterest
 		volTotal += volume
+		deltaVolTol += volume - prevVolume
+		deltaSumPriceVolTol += float32(volume-prevVolume) * strike
 	}
 	if volTotal == 0 {
-		expectedPriceBuy = 0
+		expectedPriceVol = 0
 	} else {
-		expectedPriceBuy = sumPriceBuy / float32(volTotal)
+		expectedPriceVol = sumPriceBuy / float32(volTotal)
 	}
 	if oiTotal == 0 {
-		expectedPriceSell = 0
+		expectedPriceOI = 0
 	} else {
-		expectedPriceSell = sumPriceSell / float32(oiTotal)
+		expectedPriceOI = sumPriceSell / float32(oiTotal)
 	}
-	//Download stock data for the symbol and today's date
+	if deltaVolCall == 0 {
+		deltaExpectedPriceVolCall = 0
+	} else {
+		deltaExpectedPriceVolCall = deltaSumPriceVolCall / float32(deltaVolCall)
+	}
+	if deltaVolPut == 0 {
+		deltaExpectedPriceVolPut = 0
+	} else {
+		deltaExpectedPriceVolPut = deltaSumPriceVolPut / float32(deltaVolPut)
+	}
+	if deltaVolTol == 0 {
+		deltaExpectedPriceVolTol = 0
+	} else {
+		deltaExpectedPriceVolTol = deltaSumPriceVolTol / float32(deltaVolTol)
+	}
+	//2. Download stock data for the symbol and today's date
 	stmt, dbPrepErr = db.Prepare("SELECT RegularMarketPrice FROM " +
 		TBL_STOCK_DATA_NAME +
 		" WHERE " +
 		"Symbol = ? AND " +
 		"Date = ?;")
 	if dbPrepErr != nil {
-		panic(dbPrepErr)
 		return dbPrepErr
 	}
 	defer stmt.Close()
@@ -102,21 +130,32 @@ func (tbl TblOptionReport) GenerateReport(symbol string, expDate int64) error {
 		symbol,
 		GetTimeInYYYYMMDD())
 	if scanErr = stockRow.Scan(&stockPrice); scanErr != nil {
-		panic(scanErr)
 		return scanErr
 	}
-	//Save the result into database
-	fmt.Printf("%f %f\n", expectedPriceBuy, expectedPriceSell)
-	new(TblOptionReport).InsertOptionReport(symbol, expectedPriceBuy,
-		expectedPriceSell, oiCall, oiPut, oiTotal, volCall, volPut,
+	//3. Save the result into database
+	fmt.Printf("%f %f\n", expectedPriceVol, expectedPriceOI)
+	new(TblOptionReport).InsertOptionReport(symbol, expectedPriceVol,
+		expectedPriceOI,
+		deltaVolCall,
+		deltaVolPut,
+		deltaVolTol,
+		deltaExpectedPriceVolCall,
+		deltaExpectedPriceVolPut,
+		deltaExpectedPriceVolTol, oiCall, oiPut, oiTotal, volCall, volPut,
 		volTotal, stockPrice)
 	return nil
 }
 
 func (tbl TblOptionReport) InsertOptionReport(
 	symbol string,
-	expectedPriceBuy float32,
-	expectedPriceSell float32,
+	expectedPriceVol float32,
+	expectedPriceOI float32,
+	deltaVolCall int,
+	deltaVolPut int,
+	deltaVolTol int,
+	deltaExpectedPriceVolCall float32,
+	deltaExpectedPriceVolPut float32,
+	deltaExpectedPriceVolTol float32,
 	oiCall int,
 	oiPut int,
 	oiTotal int,
@@ -134,8 +173,14 @@ func (tbl TblOptionReport) InsertOptionReport(
 		" (" +
 		"Symbol, " +
 		"Date, " +
-		"ExpectedPriceBuy, " +
-		"ExpectedPriceSell, " +
+		"ExpectedPriceVol, " +
+		"ExpectedPriceOI, " +
+		"DeltaVolCall," +
+		"DeltaVolPut," +
+		"DeltaVolTol," +
+		"DeltaExpectedPriceVolCall," +
+		"DeltaExpectedPriceVolPut," +
+		"DeltaExpectedPriceVolTol," +
 		"OiCall, " +
 		"OiPut, " +
 		"OiTotal, " +
@@ -143,7 +188,7 @@ func (tbl TblOptionReport) InsertOptionReport(
 		"VolPut, " +
 		"VolTotal, " +
 		"StockPrice, " +
-		"UpdatedTime) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)")
+		"UpdatedTime) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
 	if dbPrepErr != nil {
 		panic(dbPrepErr)
 		return dbPrepErr
@@ -152,8 +197,14 @@ func (tbl TblOptionReport) InsertOptionReport(
 	_, dbExecErr := stmt.Exec(
 		symbol,
 		GetTimeInYYYYMMDD(),
-		expectedPriceBuy,
-		expectedPriceSell,
+		expectedPriceVol,
+		expectedPriceOI,
+		deltaVolCall,
+		deltaVolPut,
+		deltaVolTol,
+		deltaExpectedPriceVolCall,
+		deltaExpectedPriceVolPut,
+		deltaExpectedPriceVolTol,
 		oiCall,
 		oiPut,
 		oiTotal,
@@ -163,7 +214,6 @@ func (tbl TblOptionReport) InsertOptionReport(
 		stockPrice,
 		GetTime())
 	if dbExecErr != nil {
-		panic(dbExecErr)
 		return dbExecErr
 	}
 	return nil
@@ -194,8 +244,14 @@ func (tbl TblOptionReport) CreateTableIfNotExist() error {
 		" (" +
 		"Symbol VARCHAR(10) NOT NULL," +
 		"Date INT NOT NULL," +
-		"ExpectedPriceBuy FLOAT(10,2)," +
-		"ExpectedPriceSell FLOAT(10,2)," +
+		"ExpectedPriceVol FLOAT(10,2)," +
+		"ExpectedPriceOI FLOAT(10,2)," +
+		"DeltaVolCall INT," +
+		"DeltaVolPut INT," +
+		"DeltaVolTol INT," +
+		"DeltaExpectedPriceVolCall FLOAT(10,2)," +
+		"DeltaExpectedPriceVolPut FLOAT(10,2)," +
+		"DeltaExpectedPriceVolTol FLOAT(10,2)," +
 		"OiCall INT," +
 		"OiPut INT," +
 		"OiTotal INT," +

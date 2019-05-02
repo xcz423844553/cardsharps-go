@@ -7,9 +7,8 @@ import (
 
 func runCore() {
 	fmt.Println("runCore() starts")
-	initDb()
-	isMarketOpen()
-	return
+	// initDb()
+	// return
 	//1. get a list of stock to monitor
 	// symbols := []string{"AAPL", "BA"}
 	// symbols := []string{"BA"}
@@ -21,18 +20,32 @@ func runCore() {
 	// symbols4 := []string{"PG", "CSCO", "WMT", "INTC", "V"}
 	// symbols5 := []string{"CVX", "XOM", "HD", "JNJ", "JPM"}
 	// symbols6 := []string{"WBA", "DOW", "GS", "MRK", "PFE"}
-	symbols0 := []string{"DIA", "SPY", "QQQ"}
+	// symbols0 := []string{"DIA", "SPY", "QQQ"}
+	symbols0 := []string{"SPY"}
 	//2. activate option and stock data getter
 
 	for range time.Tick(time.Minute * 3) {
-		// go runOptionAndStockData(symbols1)
-		// go runOptionAndStockData(symbols2)
-		// go runOptionAndStockData(symbols3)
-		// go runOptionAndStockData(symbols4)
-		// go runOptionAndStockData(symbols5)
-		// go runOptionAndStockData(symbols6)
-		go runOptionAndStockData(symbols0)
+		if isMarketOpen() {
+			go runOptionAndStockData(symbols0)
+		} else {
+			//break
+			continue
+		}
 	}
+
+	// ticker := time.NewTicker(1 * time.Second)
+	// fmt.Println("Started at ", time.Now())
+	// defer ticker.Stop()
+	// go func() {
+	// 	for ; true; <-ticker.C {
+	// 		fmt.Println("Tick at ", time.Now())
+	// 	}
+	// }()
+	// time.Sleep(10 * tim.Second)
+	// fmt.Println("Stopped at ", time.Now())
+
+	//run all stocks
+
 	/*3. terminate if option data getter
 	and stock data getter are both terminated
 	*/
