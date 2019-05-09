@@ -78,14 +78,21 @@ type YahooOption struct {
 	InTheMoney        bool    `json:"inTheMoney"`
 }
 
-func (resp YahooResponse) isEmptyResult() bool {
+func (resp YahooResponse) isEmptyQuote() bool {
 	resultsArray := resp.OptionChain.Results
 	return len(resultsArray) == 0
 }
 
+func (resp YahooResponse) isEmptyOption() bool {
+	if resp.isEmptyQuote() {
+		return true
+	}
+	return len(resp.OptionChain.Results[0].OptionsArray) == 0
+}
+
 func (resp YahooResponse) GetQuote() (YahooQuote, error) {
 	var quote YahooQuote
-	if resp.isEmptyResult() {
+	if resp.isEmptyQuote() {
 		return quote, errors.New("Quote response is empty")
 	}
 	quote = resp.OptionChain.Results[0].Quote
@@ -94,7 +101,7 @@ func (resp YahooResponse) GetQuote() (YahooQuote, error) {
 
 func (resp YahooResponse) GetOptions() ([]YahooOption, error) {
 	var options []YahooOption
-	if resp.isEmptyResult() {
+	if resp.isEmptyOption() {
 		return options, errors.New("Option response is empty")
 	}
 	callArray := resp.OptionChain.Results[0].OptionsArray[0].Calls
@@ -105,14 +112,15 @@ func (resp YahooResponse) GetOptions() ([]YahooOption, error) {
 
 func (resp YahooResponse) GetExpirationDates() ([]int64, error) {
 	//only reads the closest exp date
-	expDates := make([]int64, 4)
-	if resp.isEmptyResult() {
+	var expDates []int64
+	if resp.isEmptyOption() {
 		return expDates, errors.New("Expiration date response is empty")
 	}
-	expDates[0] = resp.OptionChain.Results[0].ExpirationDates[0]
-	expDates[1] = resp.OptionChain.Results[0].ExpirationDates[1]
-	expDates[2] = resp.OptionChain.Results[0].ExpirationDates[2]
-	expDates[3] = resp.OptionChain.Results[0].ExpirationDates[3]
+	numExpDates := len(resp.OptionChain.Results[0].ExpirationDates)
+	expDates = make([]int64, numExpDates)
+	for i := 0; i < numExpDates; i++ {
+		expDates[i] = resp.OptionChain.Results[0].ExpirationDates[i]
+	}
 	return expDates, nil
 }
 

@@ -13,7 +13,13 @@ func initDb() {
 	if err = createDatabaseIfNotExist(DB_NAME); err != nil {
 		panic(err)
 	}
+	// if err = new(TblSymbol).DropTableIfExist(); err != nil {
+	// 	panic(err)
+	// }
 	if err = new(TblOptionData).DropTableIfExist(); err != nil {
+		panic(err)
+	}
+	if err = new(TblOptionData).DropTableIfExistByTblName(TBL_OPTION_DATA_ETF_NAME); err != nil {
 		panic(err)
 	}
 	if err = new(TblOptionReport).DropTableIfExist(); err != nil {
@@ -25,7 +31,13 @@ func initDb() {
 	if err = new(TblStockReport).DropTableIfExist(); err != nil {
 		panic(err)
 	}
+	// if err = new(TblSymbol).CreateTableIfNotExist(); err != nil {
+	// 	panic(err)
+	// }
 	if err = new(TblOptionData).CreateTableIfNotExist(); err != nil {
+		panic(err)
+	}
+	if err = new(TblOptionData).CreateTableIfNotExistByTblName(TBL_OPTION_DATA_ETF_NAME); err != nil {
 		panic(err)
 	}
 	if err = new(TblOptionReport).CreateTableIfNotExist(); err != nil {

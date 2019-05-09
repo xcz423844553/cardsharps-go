@@ -7,31 +7,31 @@ import (
 
 func runCore() {
 	fmt.Println("runCore() starts")
-	// initDb()
+	//initDb()
 	// return
 	//1. get a list of stock to monitor
-	// symbols := []string{"AAPL", "BA"}
-	// symbols := []string{"BA"}
-	// symbols := []string{"UNH", "TRV", "MCD", "AXP", "MSFT", "CAT", "UTX", "IBM", "BA", "MMM", "DIS", "NKE", "VZ", "KO", "AAPL", "PG", "CSCO", "WMT", "INTC", "V", "CVX", "XOM", "HD", "JNJ", "JPM", "WBA", "DOW", "GS", "MRK", "PFE", "DIA", "SPY", "QQQ"}
-
-	// symbols1 := []string{"UNH", "TRV", "MCD", "AXP", "MSFT"}
-	// symbols2 := []string{"CAT", "UTX", "IBM", "BA", "MMM"}
-	// symbols3 := []string{"DIS", "NKE", "VZ", "KO", "AAPL"}
-	// symbols4 := []string{"PG", "CSCO", "WMT", "INTC", "V"}
-	// symbols5 := []string{"CVX", "XOM", "HD", "JNJ", "JPM"}
-	// symbols6 := []string{"WBA", "DOW", "GS", "MRK", "PFE"}
-	// symbols0 := []string{"DIA", "SPY", "QQQ"}
-	symbols0 := []string{"SPY"}
-	//2. activate option and stock data getter
-
-	for range time.Tick(time.Minute * 3) {
-		if isMarketOpen() {
-			go runOptionAndStockData(symbols0)
-		} else {
-			//break
-			continue
-		}
+	symbols, err111 := new(TblSymbol).SelectSymbolByFilter()
+	if err111 != nil {
+		fmt.Println(err111)
 	}
+	fmt.Println("started-loop @ " + time.Now().String())
+	for i := 0; i < len(symbols); i = i + 100 {
+		go runOptionAndStockData(symbols[i:MinInt(i+100, len(symbols))])
+	}
+	fmt.Println("ended-loop @ " + time.Now().String())
+	// return
+	symbols0 := []string{"SPY", "DIA", "QQQ"}
+
+	//2. activate option and stock data getter
+	go runOptionAndStockData(symbols0)
+	// for range time.Tick(time.Minute * 3) {
+	// 	if isMarketOpen() {
+	// 		go runOptionAndStockData(symbols0)
+	// 	} else {
+	// 		//break
+	// 		continue
+	// 	}
+	// }
 
 	// ticker := time.NewTicker(1 * time.Second)
 	// fmt.Println("Started at ", time.Now())
@@ -69,7 +69,12 @@ func runOptionAndStockData(symbols []string) {
 		}
 		//store the option data into database
 		for _, option := range options {
-			err2 := new(TblOptionData).InsertOrUpdateOptionData(option)
+			var err2 error
+			if option.GetSymbol() == "SPY" {
+				err2 = new(TblOptionData).InsertOrUpdateOptionDataToEtf(option)
+			} else {
+				err2 = new(TblOptionData).InsertOrUpdateOptionData(option)
+			}
 			if err2 != nil {
 				panic(err2)
 			}
@@ -79,10 +84,11 @@ func runOptionAndStockData(symbols []string) {
 		if err != nil {
 			panic(err)
 		}
+		fmt.Printf("Complete option and stock data for symbol %s\n", symbol)
 	}
 
-	fmt.Println("Run option report")
-	runOptionReport(symbols)
+	//fmt.Println("Run option report")
+	//runOptionReport(symbols)
 }
 
 func runOptionReport(symbols []string) {
