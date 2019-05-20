@@ -11,8 +11,24 @@ import (
 
 func main() {
 	fmt.Println("started-service @ " + time.Now().String())
-	fmt.Println("started-service @ " + time.Now().Format("20060102"))
-	go runCore()
+	// symbols := []string{"MSFT", "AMZN", "AAPL", "GOOGL", "GOOG", "FB", "JPM", "JNJ", "XOM", "V", "WMT", "BAC", "PG", "MA", "SPY"}
+	// for _, symbol := range symbols {
+	// 	charts, _ := new(IexApiManager).GetStockChartBySymbolAndRange(symbol, "1d")
+	// 	new(IexApiManager).WriteIexChartToCsvFile(symbol, charts)
+	// }
+
+	// new(Checker).runChecker()
+	// new(Checker).runChecker2()
+	go new(Checker).runChecker3()
+	go new(Checker).runSpyChecker("SPY")
+
+	// fmt.Println("started-service @ " + time.Now().Format("20060102"))
+	// new(Orbit).runOptionReportForAllSymbol(20190510)
+	// log.Fatal(http.ListenAndServe(":9999", nil))
+	// return
+
+	// go new(Showdown).runShowdown()
+	// new(Showdown).runShowdown2()
 	r := mux.NewRouter()
 	r.Handle("/post", http.HandlerFunc(handlerPost))
 	r.Handle("/search", http.HandlerFunc(handlerSearch))

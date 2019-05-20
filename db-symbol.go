@@ -25,7 +25,7 @@ func (tbl TblSymbol) SelectSymbolByFilter() ([]string, error) {
 		return symbols, dbConnErr
 	}
 	defer db.Close()
-	stmt, dbPrepErr := db.Prepare("SELECT Symbol FROM " + TBL_SYMBOL + " LIMIT 10;")
+	stmt, dbPrepErr := db.Prepare("SELECT Symbol FROM " + TBL_SYMBOL + ";")
 	if dbPrepErr != nil {
 		return symbols, dbPrepErr
 	}

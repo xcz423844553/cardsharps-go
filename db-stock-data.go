@@ -11,12 +11,19 @@ type TblStockData struct {
 }
 
 func (tbl TblStockData) DropTableIfExist() error {
+	if err := tbl.DropTableIfExistForTblName(TBL_STOCK_DATA_NAME); err != nil {
+		return err
+	}
+	return tbl.DropTableIfExistForTblName(TBL_STOCK_DATA_ETF_NAME)
+}
+
+func (tbl TblStockData) DropTableIfExistForTblName(tblName string) error {
 	db, dbConnErr := sql.Open(MYSQL_DBNAME, MYSQL_DBADDR+DB_NAME)
 	if dbConnErr != nil {
 		return dbConnErr
 	}
 	defer db.Close()
-	_, tblDropErr := db.Exec("DROP TABLE IF EXISTS " + TBL_STOCK_DATA_NAME)
+	_, tblDropErr := db.Exec("DROP TABLE IF EXISTS " + tblName)
 	if tblDropErr != nil {
 		return tblDropErr
 	}
@@ -24,6 +31,13 @@ func (tbl TblStockData) DropTableIfExist() error {
 }
 
 func (tbl TblStockData) CreateTableIfNotExist() error {
+	if err := tbl.CreateTableIfNotExistForTblName(TBL_STOCK_DATA_NAME); err != nil {
+		return err
+	}
+	return tbl.CreateTableIfNotExistForTblName(TBL_STOCK_DATA_ETF_NAME)
+}
+
+func (tbl TblStockData) CreateTableIfNotExistForTblName(tblName string) error {
 	db, dbConnErr := sql.Open(MYSQL_DBNAME, MYSQL_DBADDR+DB_NAME)
 	if dbConnErr != nil {
 		return dbConnErr
@@ -32,7 +46,7 @@ func (tbl TblStockData) CreateTableIfNotExist() error {
 	var sqlStr string
 
 	sqlStr = "CREATE TABLE IF NOT EXISTS " +
-		TBL_STOCK_DATA_NAME +
+		tblName +
 		" (" +
 		"Symbol VARCHAR(10) NOT NULL," +
 		"Date INT NOT NULL," +
@@ -82,7 +96,15 @@ func (tbl TblStockData) CreateTableIfNotExist() error {
 	return errors.New("failed to find preset table name")
 }
 
-func (tbl TblStockData) InsertOrUpdateStockData(stock YahooQuote) error {
+func (tbl TblStockData) InsertOrUpdateStockData(stock YahooQuote, isEtf bool) error {
+	if isEtf {
+		return tbl.InsertOrUpdateStockDataToTbl(stock, TBL_STOCK_DATA_ETF_NAME)
+	} else {
+		return tbl.InsertOrUpdateStockDataToTbl(stock, TBL_STOCK_DATA_NAME)
+	}
+}
+
+func (tbl TblStockData) InsertOrUpdateStockDataToTbl(stock YahooQuote, tblName string) error {
 	db, dbConnErr := sql.Open(MYSQL_DBNAME, MYSQL_DBADDR+DB_NAME)
 	if dbConnErr != nil {
 		return dbConnErr
@@ -90,7 +112,7 @@ func (tbl TblStockData) InsertOrUpdateStockData(stock YahooQuote) error {
 	defer db.Close()
 	resQuery := db.QueryRow(
 		"SELECT EXISTS(SELECT 1 FROM "+
-			TBL_STOCK_DATA_NAME+
+			tblName+
 			" WHERE Symbol=? AND Date=?)",
 		stock.Symbol, GetTimeInYYYYMMDD())
 	var exist int
@@ -100,25 +122,25 @@ func (tbl TblStockData) InsertOrUpdateStockData(stock YahooQuote) error {
 		return dbQueryErr
 	}
 	if exist == 0 {
-		if err := tbl.InsertStockData(stock); err != nil {
+		if err := tbl.InsertStockData(stock, tblName); err != nil {
 			return err
 		}
 	} else {
-		if err := tbl.UpdateStockData(stock); err != nil {
+		if err := tbl.UpdateStockData(stock, tblName); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (tbl TblStockData) InsertStockData(stock YahooQuote) error {
+func (tbl TblStockData) InsertStockData(stock YahooQuote, tblName string) error {
 	db, dbConnErr := sql.Open(MYSQL_DBNAME, MYSQL_DBADDR+DB_NAME)
 	if dbConnErr != nil {
 		return dbConnErr
 	}
 	defer db.Close()
 	stmt, dbPrepErr := db.Prepare("INSERT INTO " +
-		TBL_STOCK_DATA_NAME +
+		tblName +
 		" (" +
 		"Symbol, " +
 		"Date, " +
@@ -205,14 +227,14 @@ func (tbl TblStockData) InsertStockData(stock YahooQuote) error {
 	return nil
 }
 
-func (tbl TblStockData) UpdateStockData(stock YahooQuote) error {
+func (tbl TblStockData) UpdateStockData(stock YahooQuote, tblName string) error {
 	db, dbConnErr := sql.Open(MYSQL_DBNAME, MYSQL_DBADDR+DB_NAME)
 	if dbConnErr != nil {
 		return dbConnErr
 	}
 	defer db.Close()
 	stmt, dbPrepErr := db.Prepare("UPDATE " +
-		TBL_STOCK_DATA_NAME +
+		tblName +
 		" SET " +
 		"RegularMarketChange=?, " +
 		"RegularMarketOpen=?, " +

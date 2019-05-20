@@ -78,19 +78,19 @@ type YahooOption struct {
 	InTheMoney        bool    `json:"inTheMoney"`
 }
 
-func (resp YahooResponse) isEmptyQuote() bool {
+func (resp *YahooResponse) isEmptyQuote() bool {
 	resultsArray := resp.OptionChain.Results
 	return len(resultsArray) == 0
 }
 
-func (resp YahooResponse) isEmptyOption() bool {
+func (resp *YahooResponse) isEmptyOption() bool {
 	if resp.isEmptyQuote() {
 		return true
 	}
 	return len(resp.OptionChain.Results[0].OptionsArray) == 0
 }
 
-func (resp YahooResponse) GetQuote() (YahooQuote, error) {
+func (resp *YahooResponse) GetQuote() (YahooQuote, error) {
 	var quote YahooQuote
 	if resp.isEmptyQuote() {
 		return quote, errors.New("Quote response is empty")
@@ -99,7 +99,7 @@ func (resp YahooResponse) GetQuote() (YahooQuote, error) {
 	return quote, nil
 }
 
-func (resp YahooResponse) GetOptions() ([]YahooOption, error) {
+func (resp *YahooResponse) GetOptions() ([]YahooOption, error) {
 	var options []YahooOption
 	if resp.isEmptyOption() {
 		return options, errors.New("Option response is empty")
@@ -110,7 +110,7 @@ func (resp YahooResponse) GetOptions() ([]YahooOption, error) {
 	return options, nil
 }
 
-func (resp YahooResponse) GetExpirationDates() ([]int64, error) {
+func (resp *YahooResponse) GetExpirationDates() ([]int64, error) {
 	//only reads the closest exp date
 	var expDates []int64
 	if resp.isEmptyOption() {
@@ -124,7 +124,7 @@ func (resp YahooResponse) GetExpirationDates() ([]int64, error) {
 	return expDates, nil
 }
 
-func (quote YahooQuote) isMarketOpen() bool {
+func (quote *YahooQuote) isMarketOpen() bool {
 	fmt.Println(quote.MarketState)
 	return quote.MarketState == "REGULAR"
 }
@@ -149,12 +149,12 @@ func (quote YahooQuote) isMarketOpen() bool {
 // 	return options, nil
 // }
 
-func (option YahooOption) GetSymbol() string {
+func (option *YahooOption) GetSymbol() string {
 	str := option.ContractSymbol
 	return str[0:(len(str) - 15)]
 }
 
-func (option YahooOption) GetOptionType() string {
+func (option *YahooOption) GetOptionType() string {
 	str := option.ContractSymbol
 	return str[(len(str) - 9):(len(str) - 8)]
 }

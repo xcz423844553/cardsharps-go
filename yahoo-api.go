@@ -12,7 +12,7 @@ import (
 type YahooApiManager struct {
 }
 
-func (manager YahooApiManager) GetOptionsAndStockDataBySymbol(symbol string) ([]YahooOption, YahooQuote, []int64, error) {
+func (manager *YahooApiManager) GetOptionsAndStockDataBySymbol(symbol string) ([]YahooOption, YahooQuote, []int64, error) {
 	_, stock, expDates, err1 := manager.GetOptionsAndStockDataBySymbolAndExpDate(symbol, -1)
 	var options []YahooOption
 	if err1 != nil {
@@ -29,7 +29,7 @@ func (manager YahooApiManager) GetOptionsAndStockDataBySymbol(symbol string) ([]
 	return options, stock, expDates, nil
 }
 
-func (manager YahooApiManager) GetOptionsAndStockDataBySymbolAndExpDate(symbol string, expDate int64) ([]YahooOption, YahooQuote, []int64, error) {
+func (manager *YahooApiManager) GetOptionsAndStockDataBySymbolAndExpDate(symbol string, expDate int64) ([]YahooOption, YahooQuote, []int64, error) {
 	var options []YahooOption
 	var stock YahooQuote
 	var expDates []int64
