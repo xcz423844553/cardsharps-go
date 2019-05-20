@@ -12,10 +12,13 @@ type TblOptionData struct {
 }
 
 func (tbl TblOptionData) DropTableIfExist() error {
-	return tbl.CreateTableIfNotExistByTblName(TBL_OPTION_DATA_NAME)
+	if err := tbl.DropTableIfExistForTblName(TBL_OPTION_DATA_NAME); err != nil {
+		return err
+	}
+	return tbl.DropTableIfExistForTblName(TBL_OPTION_DATA_ETF_NAME)
 }
 
-func (tbl TblOptionData) DropTableIfExistByTblName(tblName string) error {
+func (tbl TblOptionData) DropTableIfExistForTblName(tblName string) error {
 	db, dbConnErr := sql.Open(MYSQL_DBNAME, MYSQL_DBADDR+DB_NAME)
 	if dbConnErr != nil {
 		return dbConnErr
@@ -29,10 +32,13 @@ func (tbl TblOptionData) DropTableIfExistByTblName(tblName string) error {
 }
 
 func (tbl TblOptionData) CreateTableIfNotExist() error {
-	return tbl.CreateTableIfNotExistByTblName(TBL_OPTION_DATA_NAME)
+	if err := tbl.CreateTableIfNotExistForTblName(TBL_OPTION_DATA_NAME); err != nil {
+		return err
+	}
+	return tbl.CreateTableIfNotExistForTblName(TBL_OPTION_DATA_ETF_NAME)
 }
 
-func (tbl TblOptionData) CreateTableIfNotExistByTblName(tblName string) error {
+func (tbl TblOptionData) CreateTableIfNotExistForTblName(tblName string) error {
 	db, dbConnErr := sql.Open(MYSQL_DBNAME, MYSQL_DBADDR+DB_NAME)
 	if dbConnErr != nil {
 		return dbConnErr
@@ -72,12 +78,12 @@ func (tbl TblOptionData) CreateTableIfNotExistByTblName(tblName string) error {
 	return errors.New("failed to find preset table name")
 }
 
-func (tbl TblOptionData) InsertOrUpdateOptionData(option YahooOption) error {
-	return tbl.InsertOrUpdateOptionDataToTbl(option, TBL_OPTION_DATA_NAME)
-}
-
-func (tbl TblOptionData) InsertOrUpdateOptionDataToEtf(option YahooOption) error {
-	return tbl.InsertOrUpdateOptionDataToTbl(option, TBL_OPTION_DATA_ETF_NAME)
+func (tbl TblOptionData) InsertOrUpdateOptionData(option YahooOption, isEtf bool) error {
+	if isEtf {
+		return tbl.InsertOrUpdateOptionDataToTbl(option, TBL_OPTION_DATA_ETF_NAME)
+	} else {
+		return tbl.InsertOrUpdateOptionDataToTbl(option, TBL_OPTION_DATA_NAME)
+	}
 }
 
 func (tbl TblOptionData) InsertOrUpdateOptionDataToTbl(option YahooOption, tblName string) error {
@@ -209,6 +215,39 @@ func (tbl TblOptionData) UpdateOptionData(option YahooOption, tblName string) er
 		return dbExecErr
 	}
 	return nil
+}
+
+func (tbl TblOptionData) SelectExpirationBySymbolAndDate(symbol string, date int, isEtf bool) ([]int64, error) {
+	var expDates []int64
+	var tblName string
+	if isEtf {
+		tblName = TBL_OPTION_DATA_ETF_NAME
+	} else {
+		tblName = TBL_OPTION_DATA_NAME
+	}
+	db, dbConnErr := sql.Open(MYSQL_DBNAME, MYSQL_DBADDR+DB_NAME)
+	if dbConnErr != nil {
+		return expDates, dbConnErr
+	}
+	defer db.Close()
+	stmt, dbPrepErr := db.Prepare("SELECT Expiration FROM " + tblName + " WHERE " + "Symbol=? AND Date=? GROUP BY Expiration")
+	if dbPrepErr != nil {
+		return expDates, dbPrepErr
+	}
+	defer stmt.Close()
+	rows, dbQueryErr := stmt.Query(symbol, date)
+	if dbQueryErr != nil {
+		return expDates, dbQueryErr
+	}
+	defer rows.Close()
+	var expDate int64
+	for rows.Next() {
+		if scanErr := rows.Scan(&expDate); scanErr != nil {
+			return expDates, scanErr
+		}
+		expDates = append(expDates, expDate)
+	}
+	return expDates, nil
 }
 
 func (tbl TblOptionData) SelectOptionDataVolumeByContractSymbolAndDate(contractSymbol string, date int) (int, error) {

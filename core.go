@@ -52,13 +52,13 @@ func runCore() {
 	fmt.Println("runCore() ends")
 }
 
-func isMarketOpen() bool {
-	_, quote, _, err := new(YahooApiManager).GetOptionsAndStockDataBySymbol("SPY")
-	if err != nil {
-		return false
-	}
-	return quote.isMarketOpen()
-}
+// func isMarketOpen() bool {
+// 	_, quote, _, err := new(YahooApiManager).GetOptionsAndStockDataBySymbol("SPY")
+// 	if err != nil {
+// 		return false
+// 	}
+// 	return quote.isMarketOpen()
+// }
 
 func runOptionAndStockData(symbols []string) {
 	for _, symbol := range symbols {
@@ -71,16 +71,16 @@ func runOptionAndStockData(symbols []string) {
 		for _, option := range options {
 			var err2 error
 			if option.GetSymbol() == "SPY" {
-				err2 = new(TblOptionData).InsertOrUpdateOptionDataToEtf(option)
+				err2 = new(TblOptionData).InsertOrUpdateOptionData(option, true)
 			} else {
-				err2 = new(TblOptionData).InsertOrUpdateOptionData(option)
+				err2 = new(TblOptionData).InsertOrUpdateOptionData(option, false)
 			}
 			if err2 != nil {
 				panic(err2)
 			}
 		}
 		//store the stock data into database
-		err = new(TblStockData).InsertOrUpdateStockData(stock)
+		err = new(TblStockData).InsertOrUpdateStockData(stock, false)
 		if err != nil {
 			panic(err)
 		}
@@ -109,7 +109,7 @@ func runOptionReport(symbols []string) {
 }
 
 func runOptionReportDetail(symbols []string, expDates []int64) {
-	for index, symbol := range symbols {
-		new(TblOptionReport).GenerateReport(symbol, expDates[index])
+	for _, symbol := range symbols {
+		new(Orbit).runOptionReportForSymbol(symbol, GetTimeInYYYYMMDD(), false)
 	}
 }

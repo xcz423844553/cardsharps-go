@@ -9,6 +9,13 @@ import (
 
 func initDb() {
 	fmt.Println("initDb() starts")
+	if err2 := new(TblStockChecker1).DropTableIfExist(); err2 != nil {
+		panic(err2)
+	}
+	if err3 := new(TblStockChecker1).CreateTableIfNotExist(); err3 != nil {
+		panic(err3)
+	}
+	return
 	var err error
 	if err = createDatabaseIfNotExist(DB_NAME); err != nil {
 		panic(err)
@@ -16,10 +23,13 @@ func initDb() {
 	// if err = new(TblSymbol).DropTableIfExist(); err != nil {
 	// 	panic(err)
 	// }
-	if err = new(TblOptionData).DropTableIfExist(); err != nil {
+	if err = new(TblLogError).DropTableIfExist(); err != nil {
 		panic(err)
 	}
-	if err = new(TblOptionData).DropTableIfExistByTblName(TBL_OPTION_DATA_ETF_NAME); err != nil {
+	if err = new(TblLogSystem).DropTableIfExist(); err != nil {
+		panic(err)
+	}
+	if err = new(TblOptionData).DropTableIfExist(); err != nil {
 		panic(err)
 	}
 	if err = new(TblOptionReport).DropTableIfExist(); err != nil {
@@ -34,10 +44,13 @@ func initDb() {
 	// if err = new(TblSymbol).CreateTableIfNotExist(); err != nil {
 	// 	panic(err)
 	// }
-	if err = new(TblOptionData).CreateTableIfNotExist(); err != nil {
+	if err = new(TblLogError).CreateTableIfNotExist(); err != nil {
 		panic(err)
 	}
-	if err = new(TblOptionData).CreateTableIfNotExistByTblName(TBL_OPTION_DATA_ETF_NAME); err != nil {
+	if err = new(TblLogSystem).CreateTableIfNotExist(); err != nil {
+		panic(err)
+	}
+	if err = new(TblOptionData).CreateTableIfNotExist(); err != nil {
 		panic(err)
 	}
 	if err = new(TblOptionReport).CreateTableIfNotExist(); err != nil {
