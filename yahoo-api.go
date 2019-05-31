@@ -70,3 +70,29 @@ func (manager *YahooApiManager) GetOptionsAndStockDataBySymbolAndExpDate(symbol 
 	}
 	return options, stock, expDates, nil
 }
+func (manager *YahooApiManager) GetStockDataBySymbol(symbol string) (YahooQuote, error) {
+	var stock YahooQuote
+	var stockErr error
+	url := URL_OPTION + symbol
+	resp, connError := http.Get(url)
+	if connError != nil {
+		fmt.Println("ConnError: ", connError)
+		return stock, connError
+	}
+	defer resp.Body.Close()
+	body, parseError := ioutil.ReadAll(resp.Body)
+	if parseError != nil {
+		fmt.Println("ParseError: ", parseError)
+		return stock, parseError
+	}
+	var y YahooResponse
+	if jsonError := json.Unmarshal(body, &y); jsonError != nil {
+		fmt.Println("JsonError: ", jsonError)
+		return stock, parseError
+	}
+	stock, stockErr = y.GetQuote()
+	if stockErr != nil {
+		return stock, stockErr
+	}
+	return stock, nil
+}

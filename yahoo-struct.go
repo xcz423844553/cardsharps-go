@@ -129,6 +129,11 @@ func (quote *YahooQuote) isMarketOpen() bool {
 	return quote.MarketState == "REGULAR"
 }
 
+func (quote *YahooQuote) isMarketPreOpen() bool {
+	fmt.Println(quote.MarketState)
+	return quote.MarketState == "PRE"
+}
+
 // func (resp YahooResponse) GetOptionByDefaultFilter() ([]YahooOption, error) {
 // 	f := NewOptionFilter(maxOptionPercent float32, minOptionPercent float32,
 // 		maxOpenInterest int64, minOpenInterest int64, maxVolume int64, minVolume int64,

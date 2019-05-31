@@ -21,6 +21,7 @@ const (
 	TBL_OPTION_DATA_NAME     = "option_data"
 	TBL_OPTION_DATA_ETF_NAME = "option_data_etf"
 	TBL_STOCK_DATA_NAME      = "stock_data"
+	TBL_STOCK_HIST_NAME      = "stock_hist"
 	TBL_STOCK_DATA_ETF_NAME  = "stock_data_etf"
 	TBL_OPTION_REPORT_NAME   = "option_report"
 	TBL_STOCK_REPORT_NAME    = "stock_report"
@@ -68,7 +69,7 @@ const (
 
 	MAX_LENGTH_OF_MINUTE_MONEY_CHECKER = 30
 	MIN_LENGTH_OF_MINUTE_MONEY_CHECKER = 15
-	MULTI_THRESHOLD_MONEY_CHECKER      = 2
+	MULTI_THRESHOLD_MONEY_CHECKER      = 1.5
 	TICKER_MONEY_CHECKER               = 1 * time.Minute
 
 	MAX_LENGTH_OF_MINUTE_VOLUME_CHECKER = 30
@@ -80,4 +81,16 @@ const (
 	SPY_CHECK_STRIKE_RANGE = 10
 
 	BYPASS_MARKET_STATUS = false
+
+	CHANNEL_PRODUCER_SYMBOL_BUFFER_CAPACITY = 30
+
+	TRADER_SP500   = "Sp500"
+	TRADER_NASDAQ  = "Nasdaq"
+	TRADER_DOW     = "Dow"
+	TRADER_RUSSELL = "Russell"
+
+	DRAGON_TAIL_LENGTH = 20
+	DRAGON_TAIL_LIMIT  = 0.7
+	DRAGON_TAIL_MA_GAP = 0.1
+	SHIELD_HEIGHT      = 20 //#% to be considered shield
 )

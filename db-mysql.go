@@ -9,12 +9,19 @@ import (
 
 func initDb() {
 	fmt.Println("initDb() starts")
-	if err2 := new(TblStockChecker1).DropTableIfExist(); err2 != nil {
+	if err2 := new(TblStockHist).DropTableIfExist(); err2 != nil {
 		panic(err2)
 	}
-	if err3 := new(TblStockChecker1).CreateTableIfNotExist(); err3 != nil {
+	if err3 := new(TblStockHist).CreateTableIfNotExist(); err3 != nil {
 		panic(err3)
 	}
+	if err4 := new(TblStockReport).DropTableIfExist(); err4 != nil {
+		panic(err4)
+	}
+	if err5 := new(TblStockReport).CreateTableIfNotExist(); err5 != nil {
+		panic(err5)
+	}
+	fmt.Println("initDb() ends")
 	return
 	var err error
 	if err = createDatabaseIfNotExist(DB_NAME); err != nil {
@@ -38,6 +45,9 @@ func initDb() {
 	if err = new(TblStockData).DropTableIfExist(); err != nil {
 		panic(err)
 	}
+	if err = new(TblStockHist).DropTableIfExist(); err != nil {
+		panic(err)
+	}
 	if err = new(TblStockReport).DropTableIfExist(); err != nil {
 		panic(err)
 	}
@@ -57,6 +67,9 @@ func initDb() {
 		panic(err)
 	}
 	if err = new(TblStockData).CreateTableIfNotExist(); err != nil {
+		panic(err)
+	}
+	if err = new(TblStockHist).CreateTableIfNotExist(); err != nil {
 		panic(err)
 	}
 	if err = new(TblStockReport).CreateTableIfNotExist(); err != nil {

@@ -9,18 +9,77 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// func producer(nums ...int) <-chan int {
+// 	out := make(chan int, 13)
+// 	go func() {
+// 		for _, n := range nums {
+// 			fmt.Println("Store ", n)
+// 			out <- n
+// 		}
+// 		defer close(out)
+// 		fmt.Println("Closed out ")
+// 	}()
+// 	return out
+// }
+
+// func consumer(in <-chan int) chan int {
+// 	out := make(chan int)
+// 	go func() {
+// 		for n := range in {
+// 			time.Sleep(3 * time.Second)
+// 			fmt.Println("Ready ", n)
+// 			out <- n * n
+// 			fmt.Println("Output ", n)
+// 		}
+// 		close(out)
+// 	}()
+// 	return out
+// }
+// func main() {
+// 	in := producer(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)
+// 	consChan1 := consumer(in)
+// 	//consChan2 := consumer(in)
+// 	// for n := range consChan1 {
+// 	// 	fmt.Println("Received ", n)
+// 	// }
+// 	time.Sleep(20 * time.Second)
+// 	close(consChan1)
+// 	return
+// }
 func main() {
 	fmt.Println("started-service @ " + time.Now().String())
-	// symbols := []string{"MSFT", "AMZN", "AAPL", "GOOGL", "GOOG", "FB", "JPM", "JNJ", "XOM", "V", "WMT", "BAC", "PG", "MA", "SPY"}
-	// for _, symbol := range symbols {
-	// 	charts, _ := new(IexApiManager).GetStockChartBySymbolAndRange(symbol, "1d")
-	// 	new(IexApiManager).WriteIexChartToCsvFile(symbol, charts)
+
+	// initDb()
+	// // return
+	// new(Simulator).RunSimulator()
+	// return
+	//symbols := []string{"MSFT", "AMZN", "AAPL", "GOOGL", "GOOG", "FB", "JPM", "JNJ", "XOM", "V", "WMT", "BAC", "PG", "MA", "SPY"}
+
+	//Download csv from IEX
+	// symbols, symbolSelectErr := new(TblSymbol).SelectSymbolByFilter()
+	// if symbolSelectErr != nil {
+	// 	new(TblLogError).InsertLogError(LOGTYPE_DB_SYMBOL, symbolSelectErr.Error())
 	// }
+	// for _, symbol := range symbols {
+	// 	charts, _ := new(IexApiManager).GetStockDayChartBySymbolAndRange(symbol, "2y")
+	// 	new(IexApiManager).WriteIexDayChartToCsvFile(symbol, charts)
+	// }
+	// return
 
 	// new(Checker).runChecker()
 	// new(Checker).runChecker2()
-	go new(Checker).runChecker3()
-	go new(Checker).runSpyChecker("SPY")
+	// go new(Checker).runChecker3()
+	// go new(Checker).runSpyChecker("SPY")
+
+	ticker := time.NewTicker(TICKER_VOLUME_CHECKER * 10)
+	checker := new(Checker).InitChecker()
+	for ; true; <-ticker.C {
+		// if !isMarketOpen() && !BYPASS_MARKET_STATUS {
+		// 	fmt.Println("Market not open yet")
+		// 	continue
+		// }
+		checker.runChecker4()
+	}
 
 	// fmt.Println("started-service @ " + time.Now().Format("20060102"))
 	// new(Orbit).runOptionReportForAllSymbol(20190510)
@@ -28,7 +87,8 @@ func main() {
 	// return
 
 	// go new(Showdown).runShowdown()
-	// new(Showdown).runShowdown2()
+	// new(Showdown).runShowdown2() //use this
+	fmt.Println("ended-service @ " + time.Now().String())
 	r := mux.NewRouter()
 	r.Handle("/post", http.HandlerFunc(handlerPost))
 	r.Handle("/search", http.HandlerFunc(handlerSearch))

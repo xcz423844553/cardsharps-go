@@ -66,3 +66,51 @@ func (manager *IexApiManager) WriteIexChartToCsvFile(symbol string, charts []Iex
 	}
 	return nil
 }
+
+func (manager *IexApiManager) GetStockDayChartBySymbolAndRange(symbol string, chartRange string) ([]IexDayChart, error) {
+	var charts []IexDayChart
+	url := manager.GetChartUrlBySymbolAndRange(symbol, chartRange)
+	resp, connError := http.Get(url)
+	if connError != nil {
+		PrintMsgInConsole(MSGERROR, LOGTYPE_IEX_API_MANAGER+" "+symbol, connError.Error())
+		return charts, connError
+	}
+	defer resp.Body.Close()
+	body, parseError := ioutil.ReadAll(resp.Body)
+	if parseError != nil {
+		PrintMsgInConsole(MSGERROR, LOGTYPE_IEX_API_MANAGER+" "+symbol, parseError.Error())
+		return charts, parseError
+	}
+	if jsonError := json.Unmarshal(body, &charts); jsonError != nil {
+		PrintMsgInConsole(MSGERROR, LOGTYPE_IEX_API_MANAGER+" "+symbol, jsonError.Error())
+		return charts, parseError
+	}
+	return charts, nil
+}
+
+func (manager *IexApiManager) WriteIexDayChartToCsvFile(symbol string, charts []IexDayChart) error {
+	file, fileCreateErr := os.Create("./daily_charts/" + symbol + ".csv")
+	if fileCreateErr != nil {
+		PrintMsgInConsole(MSGERROR, LOGTYPE_IEX_API_MANAGER+" "+symbol, fileCreateErr.Error())
+		return fileCreateErr
+	}
+	defer file.Close()
+	writer := csv.NewWriter(file)
+	defer writer.Flush()
+	header := []string{"Date", "Open", "High", "Low",
+		"Close", "Volume", "UnadjustedVolume", "Change", "ChangePercent", "Vwap",
+		"ChangeOverTime"}
+	writeHeaderErr := writer.Write(header)
+	if writeHeaderErr != nil {
+		return writeHeaderErr
+	}
+	for _, chart := range charts {
+		str := fmt.Sprintf("%v", chart)
+		strs := strings.Fields(str[1:(len(str) - 1)])
+		writeRowErr := writer.Write(strs)
+		if writeRowErr != nil {
+			return writeRowErr
+		}
+	}
+	return nil
+}
