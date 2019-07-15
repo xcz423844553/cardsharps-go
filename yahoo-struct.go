@@ -64,11 +64,11 @@ type YahooOptionArray struct {
 }
 
 type YahooOption struct {
-	ContractSymbol    string  `json:"contractSymbol"`
-	Strike            float32 `json:"strike"`
-	LastPrice         float32 `json:"lastPrice"`
-	PriceChange       float32 `json:"change"`
-	PercentChange     float32 `json:"percentChange"`
+	ContractSymbol string  `json:"contractSymbol"`
+	Strike         float32 `json:"strike"`
+	LastPrice      float32 `json:"lastPrice"`
+	PriceChange    float32 `json:"change"`
+	//PercentChange     float32 `json:"percentChange"`
 	Volume            int     `json:"volume"`
 	OpenInterest      int     `json:"openInterest"`
 	Bid               float32 `json:"bid"`

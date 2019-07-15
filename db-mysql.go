@@ -15,12 +15,12 @@ func initDb() {
 	if err3 := new(TblStockHist).CreateTableIfNotExist(); err3 != nil {
 		panic(err3)
 	}
-	if err4 := new(TblStockReport).DropTableIfExist(); err4 != nil {
-		panic(err4)
-	}
-	if err5 := new(TblStockReport).CreateTableIfNotExist(); err5 != nil {
-		panic(err5)
-	}
+	// if err4 := new(TblStockReport).DropTableIfExist(); err4 != nil {
+	// 	panic(err4)
+	// }
+	// if err5 := new(TblStockReport).CreateTableIfNotExist(); err5 != nil {
+	// 	panic(err5)
+	// }
 	fmt.Println("initDb() ends")
 	return
 	var err error

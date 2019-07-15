@@ -199,7 +199,6 @@ func (tbl TblStockChecker1) InsertStockCheckerData(date int, minute int, volumes
 		"?, ?, ?, ?, " +
 		"?, ?, ?, ?, ?, ?, ?)")
 	if dbPrepErr != nil {
-		//panic(dbPrepErr)
 		return dbPrepErr
 	}
 	defer stmt.Close()
@@ -272,7 +271,6 @@ func (tbl TblStockChecker1) InsertStockCheckerData(date int, minute int, volumes
 		volumes[31],
 		GetTime())
 	if dbExecErr != nil {
-		//panic(dbExecErr)
 		return dbExecErr
 	}
 	return nil

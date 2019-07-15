@@ -15,9 +15,11 @@ import "time"
 // 	EMAIL_RECEIVER = "xxxxxxxxxxx@gmail.com"
 
 const (
-	DB_NAME = "card_sharps_test"
-	// DB_NAME                  = "card_sharps"
+	// DB_NAME = "card_sharps_test"
+	DB_NAME                  = "card_sharps"
 	TBL_SYMBOL               = "symbol"
+	TBL_TAG                  = "tag"
+	TBL_SYMBOL_TAG           = "symbol_tag"
 	TBL_OPTION_DATA_NAME     = "option_data"
 	TBL_OPTION_DATA_ETF_NAME = "option_data_etf"
 	TBL_STOCK_DATA_NAME      = "stock_data"
@@ -30,11 +32,14 @@ const (
 	TBL_STOCK_CHECKER1_NAME  = "stock_checker1"
 	TBL_SPY_CHECKER1_NAME    = "spy_checker1"
 
-	URL_OPTION = "https://query1.finance.yahoo.com/v7/finance/options/"
-	URL_STOCK  = "https://query1.finance.yahoo.com/v7/finance/quote?symbols="
+	URL_OPTION     = "https://query1.finance.yahoo.com/v7/finance/options/"
+	URL_STOCK      = "https://query1.finance.yahoo.com/v7/finance/quote?symbols="
+	URL_STOCK_HIST = "https://query1.finance.yahoo.com/v7/finance/download/%s?period1=%d&period2=%d&interval=1d&events=history&crumb=%s"
 
 	URL_IEX_CHART_PART1 = "https://api.iextrading.com/1.0/stock/"
 	URL_IEX_CHART_PART2 = "/chart/"
+
+	URL_MACROTRENDS = "http://download.macrotrends.net/assets/php/stock_data_export.php?t="
 
 	//Option Filter Parameter
 	DEFAULT_MAX_OPTION_PERCENT  = 0.3
@@ -54,6 +59,12 @@ const (
 	LOGTYPE_ORBIT       = "ORBIT"
 	LOGTYPE_CHECKER     = "CHECKER"
 	LOGTYPE_SPY_CHECKER = "SPY_CHECKER"
+	LOGTYPE_SERVER      = "SERVER"
+	LOGTYPE_SHUFFLER    = "SHUFFLER"
+	LOGTYPE_BOARD       = "BOARD"
+	LOGTYPE_MONITOR     = "MONITOR"
+	LOGTYPE_SHARPER     = "SHARPER"
+	LOGTYPE_MAIN        = "MAIN"
 
 	LOGTYPE_YAHOO_API_MANAGER  = "YAHOO_API_MANAGER"
 	LOGTYPE_IEX_API_MANAGER    = "IEX_API_MANAGER"
@@ -84,6 +95,7 @@ const (
 
 	CHANNEL_PRODUCER_SYMBOL_BUFFER_CAPACITY = 30
 
+	TRADER_ALL     = "All"
 	TRADER_SP500   = "Sp500"
 	TRADER_NASDAQ  = "Nasdaq"
 	TRADER_DOW     = "Dow"
@@ -93,4 +105,17 @@ const (
 	DRAGON_TAIL_LIMIT  = 0.7
 	DRAGON_TAIL_MA_GAP = 0.1
 	SHIELD_HEIGHT      = 20 //#% to be considered shield
+
+	ACTION_CREATE = "create"
+	ACTION_READ   = "read"
+	ACTION_UPDATE = "update"
+	ACTION_DELETE = "delete"
+
+	SYMBOLTAG_ALL        = "ALL"
+	SYMBOLTAG_SP500      = "SP500"
+	SYMBOLTAG_NASDAQ     = "NASDAQ"
+	SYMBOLTAG_DOW        = "DOW"
+	SYMBOLTAG_RUSSELL    = "RUSSELL"
+	SYMBOLTAG_STOCKSTAR  = "Stock Star"
+	SYMBOLTAG_OPTIONSTAR = "Option Star"
 )

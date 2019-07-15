@@ -11,6 +11,18 @@ import (
 type TblOptionData struct {
 }
 
+type RowOptionData struct {
+	ContractSymbol    string  `json:"contractSymbol"`
+	Date              int     `json:"date"`
+	Symbol            string  `json:"symbol"`
+	OptionType        string  `json:"optionType"`
+	Strike            float32 `json:"strike"`
+	LastPrice         float32 `json:"lastPrice"`
+	Volume            int     `json:"volume"`
+	OpenInterest      int     `json:"openInterest"`
+	ImpliedVolatility float32 `json:"impliedVolatility"`
+}
+
 func (tbl TblOptionData) DropTableIfExist() error {
 	if err := tbl.DropTableIfExistForTblName(TBL_OPTION_DATA_NAME); err != nil {
 		return err
@@ -152,7 +164,8 @@ func (tbl TblOptionData) InsertOptionData(option YahooOption, tblName string) er
 		option.Strike,
 		option.LastPrice,
 		option.PriceChange,
-		option.PercentChange,
+		0,
+		//option.PercentChange,
 		option.Volume,
 		option.OpenInterest,
 		option.Bid,
@@ -162,7 +175,6 @@ func (tbl TblOptionData) InsertOptionData(option YahooOption, tblName string) er
 		option.InTheMoney,
 		GetTime())
 	if dbExecErr != nil {
-		panic(dbExecErr)
 		return dbExecErr
 	}
 	return nil
@@ -200,7 +212,8 @@ func (tbl TblOptionData) UpdateOptionData(option YahooOption, tblName string) er
 	_, dbExecErr := stmt.Exec(
 		option.LastPrice,
 		option.PriceChange,
-		option.PercentChange,
+		0,
+		//option.PercentChange,
 		option.Volume,
 		prevVolume,
 		option.OpenInterest,
@@ -282,4 +295,77 @@ func (tbl TblOptionData) SelectOptionDataVolumeByContractSymbolAndDateFromTbl(co
 		}
 	}
 	return volume, nil
+}
+
+func (tbl *TblOptionData) SelectContractSymbolListBySymbolAndDate(symbol string, date int) ([]string, error) {
+	var contractSymbol []string
+	db, dbConnErr := sql.Open(MYSQL_DBNAME, MYSQL_DBADDR+DB_NAME)
+	if dbConnErr != nil {
+		return contractSymbol, dbConnErr
+	}
+	defer db.Close()
+	stmt, dbPrepErr := db.Prepare("SELECT ContractSymbol FROM " + TBL_OPTION_DATA_NAME + " WHERE " + "Symbol=? AND Date>? GROUP BY ContractSymbol")
+	if dbPrepErr != nil {
+		return contractSymbol, dbPrepErr
+	}
+	defer stmt.Close()
+	optionRows, dbQueryErr := stmt.Query(symbol, date)
+	if dbQueryErr != nil {
+		return contractSymbol, dbQueryErr
+	}
+	defer optionRows.Close()
+	var cs string
+	for optionRows.Next() {
+		if scanErr := optionRows.Scan(&cs); scanErr != nil {
+			fmt.Println(scanErr)
+			return contractSymbol, scanErr
+		}
+		contractSymbol = append(contractSymbol, cs)
+	}
+	return contractSymbol, nil
+}
+
+func (tbl *TblOptionData) SelectContractSymbolDataByContractSymbol(contractSymbol string) ([]RowOptionData, error) {
+	var rows []RowOptionData
+	db, dbConnErr := sql.Open(MYSQL_DBNAME, MYSQL_DBADDR+DB_NAME)
+	if dbConnErr != nil {
+		return rows, dbConnErr
+	}
+	defer db.Close()
+	stmt, dbPrepErr := db.Prepare("SELECT Date, Symbol, OptionType, Strike, LastPrice, Volume, OpenInterest, ImpliedVolatility FROM " + TBL_OPTION_DATA_NAME + " WHERE " + "ContractSymbol=? ORDER BY Date ASC")
+	if dbPrepErr != nil {
+		return rows, dbPrepErr
+	}
+	defer stmt.Close()
+	optionRows, dbQueryErr := stmt.Query(contractSymbol)
+	if dbQueryErr != nil {
+		return rows, dbQueryErr
+	}
+	defer optionRows.Close()
+	var date int
+	var symbol string
+	var optionType string
+	var strike float32
+	var lastPrice float32
+	var volume int
+	var openInterest int
+	var impliedVolatility float32
+	for optionRows.Next() {
+		if scanErr := optionRows.Scan(&date, &symbol, &optionType, &strike, &lastPrice, &volume, &openInterest, &impliedVolatility); scanErr != nil {
+			fmt.Println(scanErr)
+			return rows, scanErr
+		}
+		rows = append(rows, RowOptionData{
+			ContractSymbol:    contractSymbol,
+			Date:              date,
+			Symbol:            symbol,
+			OptionType:        optionType,
+			Strike:            strike,
+			LastPrice:         lastPrice,
+			Volume:            volume,
+			OpenInterest:      openInterest,
+			ImpliedVolatility: impliedVolatility,
+		})
+	}
+	return rows, nil
 }

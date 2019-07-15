@@ -14,7 +14,7 @@ func (dealer *Dealer) GetOptionAndStockData(symbol string) {
 	tblStockData := new(TblStockData)
 	tblStockHist := new(TblStockHist)
 	tblStockReport := new(TblStockReport)
-	yahooApiManager := new(YahooApiManager)
+	yahooApiManager := new(YahooAPIManager)
 	//orbit := new(Orbit)
 	isEtf := false
 	PrintMsgInConsole(MSGSYSTEM, LOGTYPE_DEALER, "Run option and stock data for symbol "+symbol)
@@ -97,7 +97,7 @@ func (dealer Dealer) GetOptionAndStockDataFromYahoo(symbols []string) {
 	tblLogError := new(TblLogError)
 	tblOptionDate := new(TblOptionData)
 	tblStockDate := new(TblStockData)
-	yahooApiManager := new(YahooApiManager)
+	yahooApiManager := new(YahooAPIManager)
 	//orbit := new(Orbit)
 	isEtf := false
 	for _, symbol := range symbols {
@@ -132,7 +132,7 @@ func (dealer Dealer) GetOptionAndEtfDataFromYahoo(symbols []string) {
 	tblLogError := new(TblLogError)
 	tblOptionDate := new(TblOptionData)
 	tblStockDate := new(TblStockData)
-	yahooApiManager := new(YahooApiManager)
+	yahooApiManager := new(YahooAPIManager)
 	orbit := new(Orbit)
 	isEtf := true
 	for _, symbol := range symbols {

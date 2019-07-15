@@ -10,7 +10,7 @@ func runCore() {
 	//initDb()
 	// return
 	//1. get a list of stock to monitor
-	symbols, err111 := new(TblSymbol).SelectSymbolByFilter()
+	symbols, err111 := new(TblSymbol).SelectAllSymbol()
 	if err111 != nil {
 		fmt.Println(err111)
 	}
@@ -63,7 +63,7 @@ func runCore() {
 func runOptionAndStockData(symbols []string) {
 	for _, symbol := range symbols {
 		fmt.Printf("Run option and stock data for symbol %s\n", symbol)
-		options, stock, _, err := new(YahooApiManager).GetOptionsAndStockDataBySymbol(symbol)
+		options, stock, _, err := new(YahooAPIManager).GetOptionsAndStockDataBySymbol(symbol)
 		if err != nil {
 			continue
 		}
@@ -95,7 +95,7 @@ func runOptionReport(symbols []string) {
 	//get an array of closet expiration date
 	expDates := make([]int64, len(symbols))
 	for index, symbol := range symbols {
-		_, _, exp, err := new(YahooApiManager).GetOptionsAndStockDataBySymbol(symbol)
+		_, _, exp, err := new(YahooAPIManager).GetOptionsAndStockDataBySymbol(symbol)
 		if err != nil {
 			fmt.Println(err)
 			continue

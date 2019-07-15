@@ -118,7 +118,6 @@ func (tbl TblStockData) InsertOrUpdateStockDataToTbl(stock YahooQuote, tblName s
 	var exist int
 	dbQueryErr := resQuery.Scan(&exist)
 	if dbQueryErr != nil && dbQueryErr != sql.ErrNoRows {
-		panic(dbQueryErr)
 		return dbQueryErr
 	}
 	if exist == 0 {
@@ -180,7 +179,6 @@ func (tbl TblStockData) InsertStockData(stock YahooQuote, tblName string) error 
 		"?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, " +
 		"?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
 	if dbPrepErr != nil {
-		panic(dbPrepErr)
 		return dbPrepErr
 	}
 	defer stmt.Close()
@@ -221,7 +219,6 @@ func (tbl TblStockData) InsertStockData(stock YahooQuote, tblName string) error 
 		stock.FiftyTwoWeekHigh,
 		GetTime())
 	if dbExecErr != nil {
-		panic(dbExecErr)
 		return dbExecErr
 	}
 	return nil
@@ -271,7 +268,6 @@ func (tbl TblStockData) UpdateStockData(stock YahooQuote, tblName string) error 
 		"UpdatedTime=? " +
 		"WHERE Symbol=? AND Date=?")
 	if dbPrepErr != nil {
-		panic(dbPrepErr)
 		return dbPrepErr
 	}
 	defer stmt.Close()
@@ -312,7 +308,6 @@ func (tbl TblStockData) UpdateStockData(stock YahooQuote, tblName string) error 
 		stock.Symbol,
 		GetTimeInYYYYMMDD())
 	if dbExecErr != nil {
-		panic(dbExecErr)
 		return dbExecErr
 	}
 	return nil

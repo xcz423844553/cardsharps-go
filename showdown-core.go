@@ -10,7 +10,7 @@ func (sd Showdown) runShowdown() {
 	dealer := new(Dealer)
 	tblLogSystem.InsertLogSystem(LOGTYPE_SHOWDOWN, "Showdown Core Started")
 	//GET SYMBOL LIST FROM db_symbol
-	symbols, symbolSelectErr := tblSymbol.SelectSymbolByFilter()
+	symbols, symbolSelectErr := tblSymbol.SelectAllSymbol()
 	if symbolSelectErr != nil {
 		tblLogError.InsertLogError(LOGTYPE_DB_SYMBOL, symbolSelectErr.Error())
 	}
@@ -25,7 +25,7 @@ func (sd Showdown) runShowdown() {
 }
 
 func isMarketOpen() bool {
-	_, quote, _, err := new(YahooApiManager).GetOptionsAndStockDataBySymbol("SPY")
+	_, quote, _, err := new(YahooAPIManager).GetOptionsAndStockDataBySymbol("QQQ")
 	if err != nil {
 		return false
 	}
@@ -33,7 +33,7 @@ func isMarketOpen() bool {
 }
 
 func isMarketPreOpenOrOpen() bool {
-	_, quote, _, err := new(YahooApiManager).GetOptionsAndStockDataBySymbol("SPY")
+	_, quote, _, err := new(YahooAPIManager).GetOptionsAndStockDataBySymbol("QQQ")
 	if err != nil {
 		return false
 	}
@@ -74,7 +74,7 @@ func (sd *Showdown) ProducerSymbol() <-chan string {
 	tblSymbol := new(TblSymbol)
 	tblLogError := new(TblLogError)
 	//GET SYMBOL LIST FROM db_symbol
-	symbols, symbolSelectErr := tblSymbol.SelectSymbolByFilter()
+	symbols, symbolSelectErr := tblSymbol.SelectAllSymbol()
 	if symbolSelectErr != nil {
 		tblLogError.InsertLogError(LOGTYPE_DB_SYMBOL, symbolSelectErr.Error())
 	}

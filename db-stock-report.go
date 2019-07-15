@@ -145,7 +145,6 @@ func (tbl *TblStockReport) InsertOrUpdateStockData(row RowStockReport) error {
 	var exist int
 	dbQueryErr := resQuery.Scan(&exist)
 	if dbQueryErr != nil && dbQueryErr != sql.ErrNoRows {
-		panic(dbQueryErr)
 		return dbQueryErr
 	}
 	if exist == 0 {
@@ -175,7 +174,6 @@ func (tbl *TblStockReport) InsertStockData(row RowStockReport) error {
 		"MA120," +
 		"UpdatedTime) VALUES (?, ?, ?, ?, ?)")
 	if dbPrepErr != nil {
-		panic(dbPrepErr)
 		return dbPrepErr
 	}
 	defer stmt.Close()
@@ -186,7 +184,6 @@ func (tbl *TblStockReport) InsertStockData(row RowStockReport) error {
 		row.MA120,
 		GetTime())
 	if dbExecErr != nil {
-		panic(dbExecErr)
 		return dbExecErr
 	}
 	return nil
@@ -206,7 +203,6 @@ func (tbl *TblStockReport) UpdateStockData(row RowStockReport) error {
 		"UpdatedTime=? " +
 		"WHERE Symbol=? AND Date=?")
 	if dbPrepErr != nil {
-		panic(dbPrepErr)
 		return dbPrepErr
 	}
 	defer stmt.Close()
@@ -217,7 +213,6 @@ func (tbl *TblStockReport) UpdateStockData(row RowStockReport) error {
 		row.Symbol,
 		row.Date)
 	if dbExecErr != nil {
-		panic(dbExecErr)
 		return dbExecErr
 	}
 	return nil

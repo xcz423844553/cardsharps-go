@@ -103,7 +103,6 @@ func (tbl TblLogSystem) InsertLogSystem(logType string, logContent string) {
 	PrintMsgInConsole(MSGSYSTEM, logType, logContent)
 	db, dbConnErr := sql.Open(MYSQL_DBNAME, MYSQL_DBADDR+DB_NAME)
 	if dbConnErr != nil {
-		panic(dbConnErr)
 		return
 	}
 	defer db.Close()
@@ -115,7 +114,6 @@ func (tbl TblLogSystem) InsertLogSystem(logType string, logContent string) {
 		"Date, " +
 		"UpdatedTime) VALUES (?,?,?,?)")
 	if dbPrepErr != nil {
-		panic(dbPrepErr)
 		return
 	}
 	defer stmt.Close()
@@ -125,7 +123,6 @@ func (tbl TblLogSystem) InsertLogSystem(logType string, logContent string) {
 		GetTimeInYYYYMMDD(),
 		GetTime())
 	if dbExecErr != nil {
-		panic(dbExecErr)
 		return
 	}
 	return

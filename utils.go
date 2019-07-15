@@ -28,6 +28,11 @@ func GetTimeInt() int {
 	return res
 }
 
+func ConvertTimeInUnix(dateInInt int) int64 {
+	t, _ := time.Parse("20060102", strconv.Itoa(dateInInt))
+	return t.Unix()
+}
+
 func MaxInt(i1 int, i2 int) int {
 	if i1 < i2 {
 		return i2
@@ -84,4 +89,16 @@ func AverageInt64(array []int64) int64 {
 
 func PrintMsgInConsole(msgType string, logType string, logContent string) {
 	fmt.Println(msgType, "[", logType, "] : [", logContent, "]")
+}
+
+//ConditionalOperation simulates the conditional operator in Java or C
+//Param: statement - the statement of true or false
+//Param: trueValue - the returned value if statement is true
+//Param: falseValue - the returned value if statement is false
+func ConditionalOperation(statement bool, trueValue interface{}, falseValue interface{}) interface{} {
+	if statement {
+		return trueValue
+	} else {
+		return falseValue
+	}
 }

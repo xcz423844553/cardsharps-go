@@ -164,7 +164,6 @@ func (tbl *TblStockHist) InsertOrUpdateStockData(stock YahooQuote, date int) err
 	var exist int
 	dbQueryErr := resQuery.Scan(&exist)
 	if dbQueryErr != nil && dbQueryErr != sql.ErrNoRows {
-		panic(dbQueryErr)
 		return dbQueryErr
 	}
 	if exist == 0 {
@@ -197,7 +196,6 @@ func (tbl *TblStockHist) InsertStockData(stock YahooQuote, date int) error {
 		"Volume," +
 		"UpdatedTime) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
 	if dbPrepErr != nil {
-		panic(dbPrepErr)
 		return dbPrepErr
 	}
 	defer stmt.Close()
@@ -211,7 +209,6 @@ func (tbl *TblStockHist) InsertStockData(stock YahooQuote, date int) error {
 		stock.RegularMarketVolume,
 		GetTime())
 	if dbExecErr != nil {
-		panic(dbExecErr)
 		return dbExecErr
 	}
 	return nil
@@ -234,7 +231,6 @@ func (tbl *TblStockHist) UpdateStockData(stock YahooQuote, date int) error {
 		"UpdatedTime=? " +
 		"WHERE Symbol=? AND Date=?")
 	if dbPrepErr != nil {
-		panic(dbPrepErr)
 		return dbPrepErr
 	}
 	defer stmt.Close()
@@ -248,7 +244,6 @@ func (tbl *TblStockHist) UpdateStockData(stock YahooQuote, date int) error {
 		stock.Symbol,
 		date)
 	if dbExecErr != nil {
-		panic(dbExecErr)
 		return dbExecErr
 	}
 	return nil

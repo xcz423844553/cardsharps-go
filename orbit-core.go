@@ -13,7 +13,7 @@ func (orbit Orbit) runOptionReportForAllSymbol(date int) {
 	tblSymbol := new(TblSymbol)
 	tblLogError := new(TblLogError)
 	//run non-etf symbols
-	symbols, symbolSelectErr := tblSymbol.SelectSymbolByFilter()
+	symbols, symbolSelectErr := tblSymbol.SelectAllSymbol()
 	if symbolSelectErr != nil {
 		tblLogError.InsertLogError(LOGTYPE_DB_SYMBOL, symbolSelectErr.Error())
 	}
