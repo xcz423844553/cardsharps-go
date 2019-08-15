@@ -166,10 +166,10 @@ func (sharper *Sharper) CalcEMAStat(data []float64, emaRange int) ([]float64, er
 	return ema, nil
 }
 
-func (sharper *Sharper) CalcMACDStat(data []float64, emaRangeShort int, emaRangeLong int, macdRange int) ([]float64, error) {
+func (sharper *Sharper) CalcMACDStat(data []float64, emaRangeShort int, emaRangeLong int, macdRange int) ([]float64, []float64, []float64, error) {
 	//Minimum length of data is macdRange * 2+emaRangeLong * 2 (if emaRangeLong is larger than emaRangeShort)
 	if len(data) < MinInt(macdRange*2+emaRangeLong*2, macdRange*2+emaRangeShort*2) {
-		return nil, errors.New("Not enough data to calculate MACD")
+		return nil, nil, nil, errors.New("Not enough data to calculate MACD")
 	}
 
 	var emaShort []float64 //Short Exponential Moving Average
@@ -184,22 +184,22 @@ func (sharper *Sharper) CalcMACDStat(data []float64, emaRangeShort int, emaRange
 
 	emaShort, emaShortErr = sharper.CalcEMAStat(data, emaRangeShort)
 	if emaShortErr != nil {
-		return macd, emaShortErr
+		return macd, diff, dea, emaShortErr
 	}
 	emaLong, emaLongErr = sharper.CalcEMAStat(data, emaRangeLong)
 	if emaLongErr != nil {
-		return macd, emaLongErr
+		return macd, diff, dea, emaLongErr
 	}
 	for i := 0; i < MinInt(len(emaLong), len(emaShort)); i++ {
 		diff = append(diff, emaShort[i]-emaLong[i])
 	}
 	dea, deaErr = sharper.CalcEMAStat(diff, macdRange)
 	if deaErr != nil {
-		return macd, deaErr
+		return macd, diff, dea, deaErr
 	}
 	macd = make([]float64, MinInt(len(diff), len(dea)))
 	for i := 0; i < MinInt(len(diff), len(dea)); i++ {
 		macd[i] = (diff[i] - dea[i]) * 2
 	}
-	return macd, nil
+	return macd, diff, dea, nil
 }

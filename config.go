@@ -15,8 +15,8 @@ import "time"
 // 	EMAIL_RECEIVER = "xxxxxxxxxxx@gmail.com"
 
 const (
-	// DB_NAME = "card_sharps_test"
-	DB_NAME                  = "card_sharps"
+	DB_NAME = "card_sharps_test"
+	// DB_NAME                  = "card_sharps"
 	TBL_SYMBOL               = "symbol"
 	TBL_TAG                  = "tag"
 	TBL_SYMBOL_TAG           = "symbol_tag"

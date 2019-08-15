@@ -369,3 +369,60 @@ func (tbl *TblOptionData) SelectContractSymbolDataByContractSymbol(contractSymbo
 	}
 	return rows, nil
 }
+
+func (tbl TblOptionData) SelectOptionDataVolumeBySymbolAndDate(symbol string, date int64) ([]int64, map[int64]int64, map[int64]int64, map[int64]int64, map[int64]int64, error) {
+	return tbl.SelectOptionDataVolumeBySymbolAndDateFromTbl(symbol, date, TBL_OPTION_DATA_NAME)
+}
+
+func (tbl TblOptionData) SelectOptionDataVolumeBySymbolAndDateToEtf(symbol string, date int64) ([]int64, map[int64]int64, map[int64]int64, map[int64]int64, map[int64]int64, error) {
+	return tbl.SelectOptionDataVolumeBySymbolAndDateFromTbl(symbol, date, TBL_OPTION_DATA_ETF_NAME)
+}
+
+func (tbl TblOptionData) SelectOptionDataVolumeBySymbolAndDateFromTbl(symbol string, date int64, tblName string) ([]int64, map[int64]int64, map[int64]int64, map[int64]int64, map[int64]int64, error) {
+	var expDate []int64
+	exp := make(map[int64]struct{}) //serve as a hashset for expDate
+	callVol := make(map[int64]int64)
+	putVol := make(map[int64]int64)
+	callOi := make(map[int64]int64)
+	putOi := make(map[int64]int64)
+	db, dbConnErr := sql.Open(MYSQL_DBNAME, MYSQL_DBADDR+DB_NAME)
+	if dbConnErr != nil {
+		return expDate, callVol, putVol, callOi, putOi, dbConnErr
+	}
+	defer db.Close()
+	stmt, dbPrepErr := db.Prepare("SELECT OptionType, Volume, OpenInterest, Expiration FROM " + tblName + " WHERE " + "Symbol=? AND Date=?")
+	if dbPrepErr != nil {
+		return expDate, callVol, putVol, callOi, putOi, dbPrepErr
+	}
+	defer stmt.Close()
+	optionRows, dbQueryErr := stmt.Query(symbol, date)
+	if dbQueryErr != nil {
+		return expDate, callVol, putVol, callOi, putOi, dbQueryErr
+	}
+	defer optionRows.Close()
+	var optionType string
+	var volume int64
+	var openInterest int64
+	var expiration int64
+	for optionRows.Next() {
+		if scanErr := optionRows.Scan(&optionType, &volume, &openInterest, &expiration); scanErr != nil {
+			fmt.Println(scanErr)
+			return expDate, callVol, putVol, callOi, putOi, scanErr
+		}
+		expDateKey := ConvertUnixTimeInYYYYMMDD(expiration)
+		if _, exist := exp[expDateKey]; !exist {
+			exp[expDateKey] = struct{}{}
+		}
+		if optionType == "C" {
+			callVol[expDateKey] += volume
+			callOi[expDateKey] += openInterest
+		} else {
+			putVol[expDateKey] += volume
+			putOi[expDateKey] += openInterest
+		}
+	}
+	for key := range exp {
+		expDate = append(expDate, key)
+	}
+	return expDate, callVol, putVol, callOi, putOi, nil
+}

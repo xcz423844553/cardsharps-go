@@ -78,6 +78,9 @@ func (sd *Showdown) ProducerSymbol() <-chan string {
 	if symbolSelectErr != nil {
 		tblLogError.InsertLogError(LOGTYPE_DB_SYMBOL, symbolSelectErr.Error())
 	}
+	symbols = append(symbols, "SPY")
+	symbols = append(symbols, "DIA")
+	symbols = append(symbols, "QQQ")
 	// symbols = []string{"AAPL"}
 	go func() {
 		for _, symbol := range symbols {

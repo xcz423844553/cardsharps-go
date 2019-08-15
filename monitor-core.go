@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"math"
+	"sort"
 )
 
 //Monitor is a library to monitor the market status
@@ -135,8 +137,9 @@ func (monitor *Monitor) MonitorStock(symbol string, stockMonitor *StockMonitor) 
 	var kcUpperArray []float32
 	var kcLowerArray []float32
 	var macdArray []float64
+	var diffArray []float64
 	var macdErr error
-	macdArray, macdErr = sharper.CalcMACDStat(closePriceList, PARAM_MACD_EMA_RANGE_SHORT, PARAM_MACD_EMA_RANGE_LONG, PARAM_MACD_RANGE)
+	macdArray, diffArray, _, macdErr = sharper.CalcMACDStat(closePriceList, PARAM_MACD_EMA_RANGE_SHORT, PARAM_MACD_EMA_RANGE_LONG, PARAM_MACD_RANGE)
 	if macdErr != nil {
 		PrintMsgInConsole(MSGERROR, LOGTYPE_MONITOR, "Calculate MACD Stat Error for "+symbol+": "+macdErr.Error())
 		return
@@ -175,6 +178,25 @@ func (monitor *Monitor) MonitorStock(symbol string, stockMonitor *StockMonitor) 
 		}
 	}
 
+	var smallerPercentChangeCount int
+	var largerVolumeCount int
+	currentPercentChange := math.Abs(float64(histList[0].MarketClose - histList[0].MarketOpen/histList[0].MarketOpen))
+	currentVolume := histList[0].Volume
+	var secondLargeVolume int
+	for i := 1; i < len(histList) && i < 21; i++ {
+		newPercentChange := math.Abs(float64(histList[i].MarketClose - histList[i].MarketOpen/histList[i].MarketOpen))
+		newVolume := histList[i].Volume
+		if currentPercentChange > newPercentChange {
+			smallerPercentChangeCount++
+		}
+		if currentVolume < newVolume {
+			largerVolumeCount++
+		}
+		if secondLargeVolume < newVolume {
+			secondLargeVolume = newVolume
+		}
+	}
+
 	//TODO
 	if (macdArray[0] > 0 && macdArray[1] < 0) && daysBeforeMacdFlip >= 10 {
 		if _, ok := stm.stockChances[stock.Symbol]; ok {
@@ -194,13 +216,13 @@ func (monitor *Monitor) MonitorStock(symbol string, stockMonitor *StockMonitor) 
 		// 		stc.Trend = "X-Down"
 		// 	}
 		// 	stm.stockChances[stock.Symbol] = &stc
-	} else if (2*macdArray[0]-macdArray[1] > 0 && macdArray[0] < 0) && daysBeforeMacdNotFlip >= 10 {
+	} else if diffArray[0] > 0 && diffArray[1] < 0 {
 		if _, ok := stm.stockChances[stock.Symbol]; ok {
 			stc.Status = "KEEP"
-			stc.Trend = "WARM"
+			stc.Trend = "CROSS"
 		} else {
 			stc.Status = "NEW"
-			stc.Trend = "WARM"
+			stc.Trend = "CROSS"
 		}
 		stm.stockChances[stock.Symbol] = &stc
 		// } else if bollUpperArray[0] > kcUpperArray[0] && bollUpperArray[PARAM_CROSS_RANGE-1] < kcUpperArray[PARAM_CROSS_RANGE-1] && stock.RegularMarketPrice > bollUpperArray[0] {
@@ -243,6 +265,15 @@ func (monitor *Monitor) MonitorStock(symbol string, stockMonitor *StockMonitor) 
 		// 	}
 		// 	stm.stockChances[stock.Symbol] = &stc
 		// 	fmt.Printf("Cross-1 %s %.2f\r\n", stock.Symbol, stock.RegularMarketPrice)
+	} else if smallerPercentChangeCount <= 3 && largerVolumeCount < 2 {
+		if _, ok := stm.stockChances[stock.Symbol]; ok {
+			stc.Status = "KEEP"
+			stc.Trend = "EJECT"
+		} else {
+			stc.Status = "NEW"
+			stc.Trend = "EJECT"
+		}
+		stm.stockChances[stock.Symbol] = &stc
 	} else {
 		if _, ok := stm.stockChances[stock.Symbol]; ok {
 			stc.Status = "REMOVE"
@@ -251,4 +282,55 @@ func (monitor *Monitor) MonitorStock(symbol string, stockMonitor *StockMonitor) 
 	}
 
 	PrintMsgInConsole(MSGSYSTEM, LOGTYPE_SHUFFLER, "Completed one round of stock monitor for "+symbol)
+}
+
+func (monitor *Monitor) MonitorPCR(symbol string, date int64) {
+	expDate, callVol, putVol, callOi, putOi, err := new(TblOptionData).SelectOptionDataVolumeBySymbolAndDate(symbol, date)
+	if err != nil {
+		panic(err)
+	}
+	sort.Slice(expDate, func(i, j int) bool { return expDate[i] < expDate[j] })
+
+	//Send email
+	emailBody := ""
+	emailBody += fmt.Sprintf("%s %s %s %s %s %s %s %s %s %s\r\n", "Date", "ExpDate", "CPR-Vol", "CPR-OI", "CallVol", "PutVol", "CallOI", "PutOI", "Vol Hint", "OI Hint")
+
+	for _, exp := range expDate {
+		cprVol := float64(callVol[exp]) / float64(putVol[exp])
+		cprOi := float64(callOi[exp]) / float64(putOi[exp])
+		volHint := ""
+		oiHint := ""
+		if cprVol < 1 {
+			volHint = "Buyer Bear"
+		} else {
+			volHint = "Buyer Bull"
+		}
+		if cprOi < 1 {
+			oiHint = "Holder Bull"
+		} else {
+			oiHint = "Holder Bear"
+		}
+		emailBody += fmt.Sprintf("%d", date)
+		emailBody += fmt.Sprintf(" %d", exp)
+		emailBody += fmt.Sprintf(" %.2f", cprVol)
+		emailBody += fmt.Sprintf(" %.2f", cprOi)
+		emailBody += fmt.Sprintf(" %d", callVol[exp])
+		emailBody += fmt.Sprintf(" %d", putVol[exp])
+		emailBody += fmt.Sprintf(" %d", callOi[exp])
+		emailBody += fmt.Sprintf(" %d", putOi[exp])
+		emailBody += fmt.Sprintf(" %s", volHint)
+		emailBody += fmt.Sprintf(" %s", oiHint)
+		emailBody += "\r\n"
+	}
+
+	email := Email{
+		senderId: EMAIL_SENDER,
+		toIds:    []string{EMAIL_RECEIVER},
+		subject:  "CardSharps Option Monitor Report",
+		body:     emailBody,
+		password: EMAIL_PASSWORD,
+	}
+	email.sendEmail()
+
+	return
 }

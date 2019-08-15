@@ -16,10 +16,22 @@ import (
 
 func main() {
 
+	// new(Monitor).MonitorPCR("BA", int64(20190708))
+	// new(Monitor).MonitorPCR("BA", int64(20190709))
+	// new(Monitor).MonitorPCR("BA", int64(20190710))
+	// new(Monitor).MonitorPCR("BA", int64(20190711))
+	// new(Monitor).MonitorPCR("BA", int64(20190712))
+	// new(Monitor).MonitorPCR("BA", int64(20190715))
+	// new(Monitor).MonitorPCR("BA", int64(20190716))
+	// new(Monitor).MonitorPCR("BA", int64(20190717))
+	// new(Monitor).MonitorPCR("BA", int64(20190718))
+	// new(Monitor).MonitorPCR("BA", int64(20190719))
+	// return
+
 	// initDb()
 	// return
 
-	// new(Shuffler).RecoverHistoricalStockDataFromYahoo(20190630, 20190702)
+	// new(Shuffler).RecoverHistoricalStockDataFromYahoo(20190708, 20190807)
 	// return
 
 	fmt.Println("started-service @ " + time.Now().String())
@@ -54,7 +66,7 @@ func main() {
 	// }
 	// return
 
-	/*****/
+	/*****
 	ticker := time.NewTicker(TICKER_VOLUME_CHECKER * 10)
 	for true {
 		for ; !isMarketOpen(); <-ticker.C {
@@ -73,7 +85,8 @@ func main() {
 	// return
 
 	// go new(Showdown).runShowdown()
-	// new(Showdown).runShowdown2() //use this
+	new(Monitor).MonitorAllStock()
+	new(Showdown).runShowdown2() //use this
 	fmt.Println("ended-service @ " + time.Now().String())
 	r := mux.NewRouter()
 	r.Handle("/post", http.HandlerFunc(handlerPost))

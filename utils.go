@@ -33,6 +33,12 @@ func ConvertTimeInUnix(dateInInt int) int64 {
 	return t.Unix()
 }
 
+func ConvertUnixTimeInYYYYMMDD(unix int64) int64 {
+	t := time.Unix(unix, 0)
+	i, _ := strconv.ParseInt(t.Format("20060102"), 10, 64)
+	return i
+}
+
 func MaxInt(i1 int, i2 int) int {
 	if i1 < i2 {
 		return i2
