@@ -11,17 +11,17 @@ import (
 type TblOptionData struct {
 }
 
-type RowOptionData struct {
-	ContractSymbol    string  `json:"contractSymbol"`
-	Date              int     `json:"date"`
-	Symbol            string  `json:"symbol"`
-	OptionType        string  `json:"optionType"`
-	Strike            float32 `json:"strike"`
-	LastPrice         float32 `json:"lastPrice"`
-	Volume            int     `json:"volume"`
-	OpenInterest      int     `json:"openInterest"`
-	ImpliedVolatility float32 `json:"impliedVolatility"`
-}
+// type RowOptionData struct {
+// 	ContractSymbol    string  `json:"contractSymbol"`
+// 	Date              int     `json:"date"`
+// 	Symbol            string  `json:"symbol"`
+// 	OptionType        string  `json:"optionType"`
+// 	Strike            float32 `json:"strike"`
+// 	LastPrice         float32 `json:"lastPrice"`
+// 	Volume            int     `json:"volume"`
+// 	OpenInterest      int     `json:"openInterest"`
+// 	ImpliedVolatility float32 `json:"impliedVolatility"`
+// }
 
 func (tbl TblOptionData) DropTableIfExist() error {
 	if err := tbl.DropTableIfExistForTblName(TBL_OPTION_DATA_NAME); err != nil {
@@ -357,13 +357,13 @@ func (tbl *TblOptionData) SelectContractSymbolDataByContractSymbol(contractSymbo
 		}
 		rows = append(rows, RowOptionData{
 			ContractSymbol:    contractSymbol,
-			Date:              date,
+			Date:              int64(date),
 			Symbol:            symbol,
 			OptionType:        optionType,
 			Strike:            strike,
 			LastPrice:         lastPrice,
-			Volume:            volume,
-			OpenInterest:      openInterest,
+			Volume:            int64(volume),
+			OpenInterest:      int64(openInterest),
 			ImpliedVolatility: impliedVolatility,
 		})
 	}

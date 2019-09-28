@@ -9,14 +9,7 @@ type Board struct {
 	mutLock   sync.Mutex
 }
 
-//SymbolProducer creates a producer of symbols from database "symbol"
-//Param: isSp500 - true if the symbol is marked as Sp500
-//Param: isNasdaq - true if the symbol is marked as Nasdaq
-//Param: isDow - true if the symbol is marked as Dow
-//Param: isRussell - true if the symbol is marked as Russell
-//Param: isETF - true if the symbol is ETF
-//Param: isStockMonitored - true if the symbol's stock is monitored
-//Param: isOptionMonitored - true if the symbol's option is monitored
+//SymbolProducer creates a producer of symbols from db_symbol
 //Return: outChan - channel to send symbols
 func (bd *Board) SymbolProducer(tag string) <-chan string {
 	outChan := make(chan string, CHANNEL_PRODUCER_SYMBOL_BUFFER_CAPACITY)
