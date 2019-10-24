@@ -33,6 +33,38 @@ type RowStockHist2 struct {
 	Volume      int64
 }
 
+//Implement interface IStockHist on RowStockHist
+
+//GetSymbol returns the symbol of the sotck
+func (row *RowStockHist2) GetSymbol() string {
+	return row.Symbol
+}
+
+//GetMarketOpen returns the market open price
+func (row *RowStockHist2) GetMarketOpen() float32 {
+	return row.MarketOpen
+}
+
+//GetMarketHigh returns the market high price
+func (row *RowStockHist2) GetMarketHigh() float32 {
+	return row.MarketHigh
+}
+
+//GetMarketLow returns the market low price
+func (row *RowStockHist2) GetMarketLow() float32 {
+	return row.MarketLow
+}
+
+//GetMarketClose returns the market close price
+func (row *RowStockHist2) GetMarketClose() float32 {
+	return row.MarketClose
+}
+
+//GetVolume returns the volume
+func (row *RowStockHist2) GetVolume() int64 {
+	return row.Volume
+}
+
 //GetTableName returns table name
 func (dao *DaoStockHist) getTableName() string {
 	if TestMode {

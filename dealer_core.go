@@ -59,11 +59,13 @@ func (dealer *Dealer2) DownloadAllOptionChainAndStock(symbol string) {
 	//store the option data into database
 	var insertErr error
 	for _, option := range options {
-		insertErr = daoOptionData.InsertOrUpdateOptionData(&option)
-		if insertErr != nil {
-			fmt.Println("Error encounted while inserting option chain data for " + symbol + " on date " + strconv.FormatInt(option.GetExpiration(), 10))
-			fmt.Println(insertErr)
-			continue
+		if option.GetVolume() != 0 && option.GetOpenInterest() != 0 {
+			insertErr = daoOptionData.InsertOrUpdateOptionData(&option)
+			if insertErr != nil {
+				fmt.Println("Error encounted while inserting option chain data for " + symbol + " on date " + strconv.FormatInt(option.GetExpiration(), 10))
+				fmt.Println(insertErr)
+				continue
+			}
 		}
 	}
 	//store the stock data into database

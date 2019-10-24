@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+    <head>
+<style>
+    table {border: 1px solid grey;}
+    th {border: 1px solid grey; font-weight: bold;}
+    tr {border: 1px solid grey;}
+    td {border: 1px solid grey;}
+</style>
+    </head>
+    <body>
+        {{ range . }}
+        <p>
+            Expiration Date: {{ .ExpirationDate }}  Stock Price: {{ .CurrentPrice }}  ATR: {{ .Atr }}  ATR Percent: {{ .AtrPercent }}  SD: {{ .Std }}  SD Percent: {{ .StdPercent }} 
+        </p>
+        <table>
+            <tr>
+                <th>Type</th>
+                <td>{{ .OptionType }}</td>
+                <td>Date</td>
+                {{ range .Dates }}
+                    <td>{{ . }}</td>
+                {{ end }}
+            </tr>
+            <tr>
+                <th>Strike</th>
+                <td>{{ .Strike }}</td>
+                <td>Double Price</td>
+                {{ range .DoublePrice }}
+                    <td>{{ . }}</td>
+                {{ end }}
+            </tr>
+            <tr>
+                <th>CurrentOptionPrice</th>
+                <td>{{ .CurrentOptionPrice }}</td>
+                <td>Double Price Change</td>
+                {{ range .DoublePriceChange }}
+                    <td>{{ . }}</td>
+                {{ end }}
+            </tr>
+        </table>
+        {{ end }}
+    </body>
+</html>
