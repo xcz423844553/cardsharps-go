@@ -10,6 +10,10 @@ func GetTimeInYYYYMMDD() int {
 	i, _ := strconv.Atoi(time.Now().Format("20060102"))
 	return i
 }
+func GetTimeInYYYYMMDD64() int64 {
+	i, _ := strconv.ParseInt(time.Now().Format("20060102"), 10, 64)
+	return i
+}
 func ConvertTimeInYYYYMMDD(str string) int {
 	t, _ := time.Parse("2006-01-02", str)
 	i, _ := strconv.Atoi(t.Format("20060102"))
@@ -33,8 +37,23 @@ func ConvertTimeInUnix(dateInInt int) int64 {
 	return t.Unix()
 }
 
+func ConvertTime64InUnix(dateInInt64 int64) int64 {
+	t, _ := time.Parse("20060102", strconv.FormatInt(dateInInt64, 10))
+	return t.Unix()
+}
+
 func ConvertUnixTimeInYYYYMMDD(unix int64) int64 {
 	t := time.Unix(unix, 0)
+	i, _ := strconv.ParseInt(t.Format("20060102"), 10, 64)
+	return i
+}
+
+func ConvertUTCUnixTimeInYYYYMMDD(unix int64) int64 {
+	t := time.Unix(unix, 0)
+	loc, err := time.LoadLocation("")
+	if err == nil {
+		t = t.In(loc)
+	}
 	i, _ := strconv.ParseInt(t.Format("20060102"), 10, 64)
 	return i
 }

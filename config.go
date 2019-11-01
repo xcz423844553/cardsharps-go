@@ -15,6 +15,31 @@ import "time"
 // 	EMAIL_RECEIVER = "xxxxxxxxxxx@gmail.com"
 
 const (
+	TestMode = false
+
+	// DbName = "card_sharps_test"
+	DbName            = "card_sharps"
+	TblNameSymbol     = "db_symbol"
+	TblNameTag        = "db_tag"
+	TblNameSymbolTag  = "db_symbol_tag"
+	TblNameOptionData = "db_option_data"
+	TblNameStockData  = "db_stock_data"
+	TblNameStockHist  = "db_stock_hist"
+
+	CHANNEL_PRODUCER_SYMBOL_BUFFER_CAPACITY = 30
+
+	TICKER_MONITOR_MAIN = 1 * time.Minute
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
 	DB_NAME = "card_sharps_test"
 	// DB_NAME                  = "card_sharps"
 	TBL_SYMBOL               = "symbol"
@@ -92,8 +117,6 @@ const (
 	SPY_CHECK_STRIKE_RANGE = 10
 
 	BYPASS_MARKET_STATUS = false
-
-	CHANNEL_PRODUCER_SYMBOL_BUFFER_CAPACITY = 30
 
 	TRADER_ALL     = "All"
 	TRADER_SP500   = "Sp500"

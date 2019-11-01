@@ -16,6 +16,53 @@ import (
 
 func main() {
 
+	// m := new(Monitor2)
+	// dailyReport := new(DailyReport)
+	// m.MonitorModel2("SPY", GetTimeInYYYYMMDD64(), dailyReport)
+	// fmt.Println("send email")
+	// email := Email{
+	// 	senderId: EMAIL_SENDER,
+	// 	toIds:    []string{EMAIL_RECEIVER},
+	// 	subject:  "CardSharps Daily Report",
+	// 	body:     "",
+	// 	password: EMAIL_PASSWORD,
+	// }
+	// erre := email.SendEmailInTemplateModel2(dailyReport.optionReport)
+	// if erre != nil {
+	// 	fmt.Println(erre.Error())
+
+	// }
+	// for _, rpt := range dailyReport.optionReport {
+	// 	fmt.Printf("Symbol:%s OptionType:%s ExpirationDate:%d\r\n", rpt.Symbol, rpt.OptionType, rpt.ExpirationDate)
+	// 	fmt.Printf("Strike:%.2f CurrentPrice:%.2f DoublePrice:%.2f DoublePriceChange:%.2f%%\r\n", rpt.Strike, rpt.CurrentPrice, rpt.DoublePrice[0], rpt.DoublePriceChange[0]*100)
+	// 	fmt.Printf("CurrentOptionPrice:%.2f DoubleOptionPrice:%.2f Atr:%.2f Ma:%.2f Std:%.2f\r\n", rpt.CurrentOptionPrice, rpt.DoubleOptionPrice, rpt.Atr, rpt.Ma, rpt.Std)
+	// }
+	// return
+
+	showdown2 := new(Showdown2)
+	showdown2.runTheShow()
+	m := new(Monitor2)
+	// m.RunDailyMonitor(new(Board2).GetSymbolTagAll())
+	m.RunDailyMonitor("Stock Star")
+	return
+	dao := new(Dao)
+	dao.InitDb()
+	shuffler := new(Shuffler2)
+	shuffler.InitHistoricalStockDataFromYahoo()
+	showdown := new(Showdown2)
+	ticker := time.NewTicker(TICKER_MONITOR_MAIN * 10)
+	for true {
+		for ; !showdown.isMarketOpen(); <-ticker.C {
+			fmt.Println("Waiting for market to open. ", time.Now().Format("2006.01.02 15:04:05"))
+		}
+		for ; showdown.isMarketOpen(); <-ticker.C {
+			//new(Monitor).MonitorAllStock()
+			fmt.Println("Market is open. ", time.Now().Format("2006.01.02 15:04:05"))
+		}
+		showdown.runTheShow()
+	}
+	return
+
 	// new(Monitor).MonitorPCR("BA", int64(20190708))
 	// new(Monitor).MonitorPCR("BA", int64(20190709))
 	// new(Monitor).MonitorPCR("BA", int64(20190710))
@@ -34,11 +81,9 @@ func main() {
 	// new(Shuffler).RecoverHistoricalStockDataFromYahoo(20190708, 20190807)
 	// return
 
-	fmt.Println("started-service @ " + time.Now().String())
-
 	// new(Simulator).RunSimulator()
 	// return
-	//symbols := []string{"MSFT", "AMZN", "AAPL", "GOOGL", "GOOG", "FB", "JPM", "JNJ", "XOM", "V", "WMT", "BAC", "PG", "MA", "SPY"}
+	//symbols := []string{"MSFT", "AMZN", "AAPL", "GOOG", "GOOG", "FB", "JPM", "JNJ", "XOM", "V", "WMT", "BAC", "PG", "MA", "SPY"}
 
 	//Download csv from IEX
 	// symbols, symbolSelectErr := new(TblSymbol).SelectSymbolByFilter()
@@ -85,9 +130,9 @@ func main() {
 	// return
 
 	// go new(Showdown).runShowdown()
-	new(Monitor).MonitorAllStock()
-	new(Showdown).runShowdown2() //use this
-	fmt.Println("ended-service @ " + time.Now().String())
+	// new(Monitor).MonitorAllStock()
+	// new(Showdown).runShowdown2() //use this
+	fmt.Println("started-service @ " + time.Now().String())
 	r := mux.NewRouter()
 	r.Handle("/post", http.HandlerFunc(handlerPost))
 	r.Handle("/search", http.HandlerFunc(handlerSearch))

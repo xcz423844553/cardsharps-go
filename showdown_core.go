@@ -17,3 +17,19 @@ func (sd *Showdown2) runTheShow() error {
 	boardErr := board.StartGame(board.GetSymbolTagAll(), executeFunc, callback)
 	return boardErr
 }
+
+func (sd *Showdown2) isMarketOpen() bool {
+	quote, err := new(YahooApi).GetQuote("SPY")
+	if err != nil {
+		return false
+	}
+	return quote.isMarketOpen()
+}
+
+func (sd *Showdown2) isMarketPreOpenOrOpen() bool {
+	quote, err := new(YahooApi).GetQuote("SPY")
+	if err != nil {
+		return false
+	}
+	return quote.isMarketPreOpen()
+}
