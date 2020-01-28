@@ -39,28 +39,34 @@ func main() {
 	// }
 	// return
 
-	showdown2 := new(Showdown2)
-	showdown2.runTheShow()
-	m := new(Monitor2)
+	// showdown2 := new(Showdown2)
+	// showdown2.runTheShow()
+	// m := new(Monitor2)
 	// m.RunDailyMonitor(new(Board2).GetSymbolTagAll())
-	m.RunDailyMonitor("Stock Star")
-	return
-	dao := new(Dao)
-	dao.InitDb()
-	shuffler := new(Shuffler2)
-	shuffler.InitHistoricalStockDataFromYahoo()
+	// m.RunDailyMonitor("Stock Star")
+	// return
+
+	// dao := new(Dao)
+	// dao.InitDb()
+	// shuffler := new(Shuffler2)
+	// shuffler.InitHistoricalStockDataFromYahoo()
 	showdown := new(Showdown2)
-	ticker := time.NewTicker(TICKER_MONITOR_MAIN * 10)
-	for true {
-		for ; !showdown.isMarketOpen(); <-ticker.C {
-			fmt.Println("Waiting for market to open. ", time.Now().Format("2006.01.02 15:04:05"))
-		}
-		for ; showdown.isMarketOpen(); <-ticker.C {
-			//new(Monitor).MonitorAllStock()
-			fmt.Println("Market is open. ", time.Now().Format("2006.01.02 15:04:05"))
-		}
-		showdown.runTheShow()
-	}
+	showdown.runTheShow()
+
+	// m := new(Monitor2)
+	// m.RunDailyMonitor("Stock Star")
+
+	// ticker := time.NewTicker(TICKER_MONITOR_MAIN * 10)
+	// for true {
+	// 	for ; !showdown.isMarketOpen(); <-ticker.C {
+	// 		fmt.Println("Waiting for market to open. ", time.Now().Format("2006.01.02 15:04:05"))
+	// 	}
+	// 	for ; showdown.isMarketOpen(); <-ticker.C {
+	// 		//new(Monitor).MonitorAllStock()
+	// 		fmt.Println("Market is open. ", time.Now().Format("2006.01.02 15:04:05"))
+	// 	}
+	// 	showdown.runTheShow()
+	// }
 	return
 
 	// new(Monitor).MonitorPCR("BA", int64(20190708))

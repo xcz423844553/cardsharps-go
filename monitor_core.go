@@ -75,7 +75,8 @@ func (monitor *Monitor2) RunDailyMonitor(tag string) {
 	dailyReport := new(DailyReport)
 	executeFunc := func(symbol string) {
 		//Add models here
-		monitor.MonitorModel1(symbol, GetTimeInYYYYMMDD64(), dailyReport)
+		monitor.MonitorModel3(symbol, GetTimeInYYYYMMDD64(), dailyReport)
+		// monitor.MonitorModel1(symbol, GetTimeInYYYYMMDD64(), dailyReport)
 		// monitor.MonitorModel2(symbol, GetTimeInYYYYMMDD64(), dailyReport)
 	}
 	callback := func() {
@@ -373,3 +374,129 @@ func (monitor *Monitor2) MonitorModel2(symbol string, currentDate int64, dailyRe
 
 // 	return
 // }
+
+//MonitorModel3 calculates the MACD, Bollinger Bands, and Keltner Channel
+func (monitor *Monitor2) MonitorModel3(symbol string, currentDate int64, dailyReport *DailyReport) error {
+	sharper := new(Sharper2)
+	yahooApi := new(YahooApi)
+
+	//Get real time stock data
+	quote, yahooApiErr := yahooApi.GetQuote(symbol)
+	if yahooApiErr != nil {
+		return yahooApiErr
+	}
+
+	//Get historical stock data (reversed, 0 is previous day)
+	histList, histErr := new(DaoStockHist).SelectLastNumberStockHistBeforeDate(symbol, ParamDataRange, currentDate)
+	if histErr != nil {
+		return histErr
+	}
+	if len(histList) < ParamCrossRange+ParamLookbackRange*2 {
+		return errors.New("Stock Hist Error: " + "Not enough Stock Hist for " + symbol)
+	}
+
+	//Prepare real time stock to the head of historical stock data
+	stockHist := RowStockHist2{
+		Symbol:      quote.GetSymbol(),
+		Date:        currentDate,
+		MarketOpen:  quote.GetMarketOpen(),
+		MarketHigh:  quote.GetMarketHigh(),
+		MarketLow:   quote.GetMarketLow(),
+		MarketClose: quote.GetMarketClose(),
+		Volume:      quote.GetVolume(),
+	}
+	histList = append([]RowStockHist2{stockHist}, histList...)
+
+	var closePriceList []float32
+	var volumeList []float32
+
+	for i := 0; i < len(histList); i++ {
+		closePriceList = append(closePriceList, float32(histList[i].MarketClose))
+		volumeList = append(volumeList, float32(histList[i].Volume))
+	}
+
+	//Calculate the parameters of Bollinger Band and Keltner Channel (reversed, index 0 is closest trading day)
+	var bollMidArray []float32
+	var bollUpperArray []float32
+	var bollLowerArray []float32
+	var kcMidArray []float32
+	var kcUpperArray []float32
+	var kcLowerArray []float32
+	var macdArray []float32
+	//var diffArray []float32
+	var deaArray []float32
+	var macdErr error
+	var vMacdArray []float32
+	//var vDiffArray []float32
+	//var vDeaArray []float32
+	var vMacdErr error
+	macdArray, _, deaArray, macdErr = sharper.CalcMACDStat(closePriceList, ParamMacdEmaRangeShort, ParamMacdEmaRangeLong, ParamMacdRange)
+	vMacdArray, _, _, vMacdErr = sharper.CalcMACDStat(volumeList, ParamMacdEmaRangeShort, ParamMacdEmaRangeLong, ParamMacdRange)
+	if macdErr != nil {
+		return errors.New("Error encountered while calculating MACD for " + symbol + ": " + macdErr.Error())
+	}
+	if vMacdErr != nil {
+		return errors.New("Error encountered while calculating VMACD for " + symbol + ": " + vMacdErr.Error())
+	}
+	for i := 0; i < ParamCrossRange; i++ {
+		bollMid, bollUpper, bollLower, kcMid, kcUpper, kcLower := sharper.CalcBollKcStat(histList, int64(i), int64(ParamCrossRange), int64(ParamLookbackRange))
+		bollMidArray = append(bollMidArray, bollMid)
+		bollUpperArray = append(bollUpperArray, bollUpper)
+		bollLowerArray = append(bollLowerArray, bollLower)
+		kcMidArray = append(kcMidArray, kcMid)
+		kcUpperArray = append(kcUpperArray, kcUpper)
+		kcLowerArray = append(kcLowerArray, kcLower)
+	}
+
+	//Analyze results
+	var dayBeforeMacdFlip int
+	var dayWhenMacdFlip int
+	dayBeforeMacdFlip = MinInt(len(macdArray), ParamMacdMonitorRange+1)
+	dayWhenMacdFlip = MinInt(len(macdArray), ParamMacdMonitorRange+1)
+	for i := 0; i < MinInt(len(macdArray), ParamMacdMonitorRange+1); i++ {
+		if (macdArray[i] >= 0 && macdArray[0] <= 0) || (macdArray[i] <= 0 && macdArray[0] >= 0) {
+			dayWhenMacdFlip = i
+			break
+		}
+	}
+	for i := dayWhenMacdFlip; i < MinInt(len(macdArray), ParamMacdMonitorRange+1); i++ {
+		if (macdArray[i] >= 0 && macdArray[0] >= 0) || (macdArray[i] <= 0 && macdArray[0] <= 0) {
+			dayBeforeMacdFlip = i
+			break
+		}
+	}
+
+	var dayBeforeVMacdFlip int
+	var dayWhenVMacdFlip int
+	dayBeforeVMacdFlip = MinInt(len(vMacdArray), ParamMacdMonitorRange+1)
+	dayWhenVMacdFlip = MinInt(len(vMacdArray), ParamMacdMonitorRange+1)
+	for i := 0; i < MinInt(len(vMacdArray), ParamMacdMonitorRange+1); i++ {
+		if (vMacdArray[i] >= 0 && vMacdArray[0] <= 0) || (vMacdArray[i] <= 0 && vMacdArray[0] >= 0) {
+			dayWhenVMacdFlip = i
+			break
+		}
+	}
+	for i := dayWhenVMacdFlip; i < MinInt(len(vMacdArray), ParamMacdMonitorRange+1); i++ {
+		if (vMacdArray[i] >= 0 && vMacdArray[0] >= 0) || (vMacdArray[i] <= 0 && vMacdArray[0] <= 0) {
+			dayBeforeVMacdFlip = i
+			break
+		}
+	}
+
+	var deaLargerCount int
+	var deaLowerCount int
+	for i := 0; i < len(deaArray); i++ {
+		if deaArray[i] > deaArray[0] {
+			deaLargerCount++
+		} else {
+			deaLowerCount++
+		}
+	}
+
+	if dayWhenMacdFlip < 5 && dayBeforeMacdFlip-dayWhenMacdFlip > 5 && dayWhenVMacdFlip < 3 && dayBeforeVMacdFlip > 2 && (deaLargerCount > deaLowerCount*4 || deaLargerCount*4 < deaLowerCount) {
+		if macdArray[0] > 0 {
+			fmt.Printf("%s is a potential up. %.2f, %.2f\r\n", symbol, macdArray[0], vMacdArray[0])
+		}
+	}
+	return nil
+}
